@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "phase": 5,
+  "dataset": "IO-VNBD",
+  "session": "S1",
+  "split_config": "configs/phase5/io_vnbd_s1_split.json",
+  "phase4_config": "configs/phase4/io_vnbd_s1_classical.json",
+  "checkpoint_path": "models/phase5/io_vnbd_s1/velocity_gru.pt",
+  "prediction_target": "VBOX evaluation-reference speed minus causal classical EKF speed; VBOX is used offline as a label only",
+  "model": {
+    "architecture": "one-layer GRU with a linear tanh-bounded residual head",
+    "hidden_size": 32,
+    "num_layers": 1,
+    "maximum_residual_mps": 12.0
+  },
+  "causal_window": {
+    "steps": 20,
+    "nominal_sample_rate_hz": 10.0,
+    "duration_s": 2.0,
+    "semantics": "history ending at current sample; no centered or future samples"
+  },
+  "training": {
+    "seed": 26168,
+    "development_blackout_duration_s": 60.0,
+    "minimum_development_blackout_duration_s": 30.0,
+    "window_stride_steps": 2,
+    "batch_size": 128,
+    "learning_rate": 0.002,
+    "weight_decay": 0.00001,
+    "maximum_epochs": 20,
+    "early_stopping_patience": 4,
+    "minimum_delta": 0.00001,
+    "huber_delta": 1.0,
+    "gradient_clip": 5.0,
+    "device": "CPU"
+  },
+  "inference": {
+    "update_stride_steps": 5,
+    "nonnegative_final_speed": true
+  }
+}

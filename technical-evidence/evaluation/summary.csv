@@ -1,0 +1,2 @@
+scenario,scenario_type,standard,requested_start_s,requested_duration_s,actual_duration_s,sample_count,reference_distance_m,raw_final_error_m,phase4_final_error_m,raw_drift_pct,phase4_drift_pct,raw_rmse_m,phase4_rmse_m,final_error_improvement_pct,rmse_improvement_pct,drift_improvement_pct
+S1_45_JUDGE,custom_phase4,False,4850.0,45.0,45.0,450,226.6787785499862,228.02003149612594,138.94131345036985,100.59169762371205,61.29436303616359,123.89544514362905,69.05860998510505,39.06618092334995,44.26057398232272,39.066180923349954

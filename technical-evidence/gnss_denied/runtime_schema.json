@@ -1,0 +1,37 @@
+{
+  "sensor_data_columns": [
+    "elapsed_s",
+    "time_since_start_ms",
+    "timestamp_local",
+    "accelerometer_x_mps2",
+    "accelerometer_y_mps2",
+    "accelerometer_z_mps2",
+    "gravity_x_mps2",
+    "gravity_y_mps2",
+    "gravity_z_mps2",
+    "gyroscope_x_radps",
+    "gyroscope_y_radps",
+    "gyroscope_z_radps",
+    "magnetic_field_x_ut",
+    "magnetic_field_y_ut",
+    "magnetic_field_z_ut",
+    "orientation_azimuth_deg",
+    "orientation_pitch_deg",
+    "orientation_roll_deg",
+    "gnss_available"
+  ],
+  "gnss_observation_columns": [
+    "elapsed_s",
+    "gps_latitude_deg",
+    "gps_longitude_deg",
+    "gps_altitude_m",
+    "gps_speed_source",
+    "gps_speed_mps",
+    "gps_speed_kmh",
+    "gps_accuracy_m",
+    "gps_orientation_deg",
+    "gps_satellites_in_range"
+  ],
+  "blackout_behavior": "GNSS rows in the half-open blackout interval are removed from gnss_observations; sensor_data remains aligned and GNSS-free.",
+  "reference_access": "Not part of RuntimeDataset; available only through ExperimentDataset.reference for evaluation/visualization."
+}

@@ -1,0 +1,53 @@
+{
+  "phase": 10,
+  "baseline_commit": "e039ec77ee02da15f7a314d3eaec37a539092650",
+  "checkpoint_sha256": "fa2169781f9e499dd87fdd00038a3b4a1326181b31938cec237a7802ae0bb4ec",
+  "frozen_model_parameter_count": 4257,
+  "python_kotlin_parity": {
+    "golden_windows": 3,
+    "residual_tolerance_mps": 0.0001,
+    "ood_tolerance": 0.00001,
+    "passed": true
+  },
+  "deterministic_demo": {
+    "samples": 270,
+    "sample_rate_hz": 10.0,
+    "blackout_seconds": 10.0,
+    "blackout_propagation_m": 59.99104241207648,
+    "final_state": "GNSS_ACTIVE",
+    "synthetic": true
+  },
+  "stationary_test": {
+    "final_speed_mps": 0.0,
+    "displacement_m": 4.389897967360316e-8
+  },
+  "recovery_test": {
+    "initial_innovation_m": 8.338315322363403,
+    "maximum_correction_m": 0.5,
+    "final_error_m": 0.07965123613145408,
+    "final_state": "GNSS_ACTIVE"
+  },
+  "jvm_engine_microbenchmark": {
+    "samples_per_second": 3471.4869420018667,
+    "average_ms_per_sample": 0.28806100000000007,
+    "p95_ms_per_sample": 0.8988,
+    "scope": "isolated warm engine-only JVM test; excludes Android sensors, rendering, logging, startup, evaluation, and power/thermal behavior"
+  },
+  "tests": {
+    "previous_kotlin": 16,
+    "new_kotlin": 14,
+    "total_kotlin_passed": 30,
+    "previous_python": 209,
+    "new_python": 3,
+    "total_python_passed": 212
+  },
+  "android_debug_build": "passed",
+  "android_debug_apk": {
+    "path": "android/app/build/outputs/apk/debug/app-debug.apk",
+    "bytes": 1120486,
+    "sha256": "3e0576ad190b6081baa90d7fefa91e627923e3a47a000f96c28a98e11ee1636f"
+  },
+  "physical_phase10_validation": "not performed",
+  "private_phone_recordings_committed": false,
+  "phase11_started": false
+}
