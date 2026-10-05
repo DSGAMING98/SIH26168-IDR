@@ -26,13 +26,13 @@ The checksums match the corresponding Git LFS pointer object IDs in the untouche
 ### Command
 
 ```powershell
-& 'C:\Users\Prajwal\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' tools\inspect_io_vnbd.py --session S1
+& "$env:USERPROFILE\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" tools\inspect_io_vnbd.py --session S1
 ```
 
 Tests:
 
 ```powershell
-& 'C:\Users\Prajwal\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' -m unittest discover -s tests -v
+& "$env:USERPROFILE\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" -m unittest discover -s tests -v
 ```
 
 ### Results
@@ -154,7 +154,7 @@ Status: Passed
 
 ### Environment and leakage boundary
 
-Execution used `C:\Users\Prajwal\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe`, Python 3.12.13. The workstation's unqualified `python` command resolves to Python 2.7.11 and was not used.
+Execution used the bundled runtime at `%USERPROFILE%\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe`, Python 3.12.13. The workstation's unqualified `python` command resolves to Python 2.7.11 and was not used.
 
 The estimator API is `integrate_raw_dead_reckoning(blackout_sensor_data, initialization, max_allowed_dt_s)`. It has no reference argument. `blackout_sensor_data` comes from the Phase 2 runtime frame and is rejected if any forbidden GNSS field or GNSS-available row is present. Initialization construction rejects any phone sensor or GNSS row at or after the requested blackout start. VBOX is passed only to `evaluate_raw_dr_prediction` after the prediction exists.
 
@@ -212,7 +212,7 @@ Status: Passed
 
 ### Environment, baseline, and leakage boundary
 
-Execution used `C:\Users\Prajwal\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe`, Python 3.12.13, from parent commit `1f8644e1feb989d215a97473bebd4d9243becba9`. Before Phase 4 edits, the complete 37-test suite passed and `S1_60_STOP_GO` reproduced 327.185498 m final relative error / 124.502678% drift exactly.
+Execution used the bundled runtime at `%USERPROFILE%\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe`, Python 3.12.13, from parent commit `1f8644e1feb989d215a97473bebd4d9243becba9`. Before Phase 4 edits, the complete 37-test suite passed and `S1_60_STOP_GO` reproduced 327.185498 m final relative error / 124.502678% drift exactly.
 
 `build_phase4_calibration` receives only the Phase 2 sensor frame plus phone-GNSS observations strictly earlier than blackout. It rejects future rows and evaluation-reference columns. `integrate_calibrated_dead_reckoning` receives only the completed calibration and GNSS-free blackout sensor rows; it has no VBOX/reference parameter and rejects phone-GNSS or reference fields. `evaluate_raw_dr_prediction` receives VBOX only after prediction. No VBOX metric was used to choose a parameter.
 
@@ -312,7 +312,7 @@ Status: Passed
 
 ### Baseline, map, and freeze
 
-Execution used `C:\Users\Prajwal\Desktop\SIH26168-IDR\.venv\Scripts\python.exe`, Python 3.12.10, from parent commit `39b50c109552cc35e4c2b75a3e65f29fa4587348`. All 91 Phase 1-5 tests passed before edits. No new Python dependency was installed.
+Execution used the workspace virtual environment at `<workspace>\.venv\Scripts\python.exe`, Python 3.12.10, from parent commit `39b50c109552cc35e4c2b75a3e65f29fa4587348`. All 91 Phase 1-5 tests passed before edits. No new Python dependency was installed.
 
 A single OpenStreetMap/Overpass download built `data/map_cache/io_vnbd_s1/road_graph.json.gz`. The fixed bounds are 52.3944–52.4239 N, -1.6074–-1.5013 E, selected from the whole S1 smartphone-GNSS envelope plus buffer without VBOX. The 1,044,506-byte deterministic gzip stores 23,103 nodes and 43,488 directed vehicle-road edges; metadata records OSM timestamp, query, attribution, classes, counts, checksum, local-coordinate convention, and offline-runtime policy.
 

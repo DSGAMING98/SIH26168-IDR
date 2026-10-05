@@ -83,7 +83,7 @@ From the repository root:
 
 ```powershell
 $env:JAVA_HOME = 'C:\Program Files\Android\openjdk\jdk-21.0.8'
-$env:ANDROID_HOME = 'C:\Users\Prajwal\AppData\Local\Android\Sdk'
+$env:ANDROID_HOME = "$env:LOCALAPPDATA\Android\Sdk"
 android\gradlew.bat -p android testDebugUnitTest assembleDebug --offline
 .venv\Scripts\python.exe -m pytest -q
 ```
