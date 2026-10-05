@@ -1,3 +1,57 @@
+# NAVGHOST — NAVIGATION BEYOND GNSS
+
+Working SIH26168 research prototype with validated causal GNSS-denied navigation.
+Performance targets and validation gaps are listed below. Team NET-PSYCHO.
+
+## Current engineering status — 2026-10-05
+
+**App and website version: 2.4.0 (41).**
+The current build adds a tested generic sensor-input adapter, not a proven navigation-accuracy upgrade.
+The final signed APK passed an in-place, data-preserving stationary smoke test on a vivo V2513
+running Android 16. This validates deployment and core UI behavior, not moving accuracy.
+
+| Locked blackout | Reproduced baseline hybrid | Exploratory heading candidate |
+|---|---:|---:|
+| 10 s | 22.655% | 13.739% |
+| 30 s | 18.571% | 8.519% |
+| 60 s | 28.232% | 27.257% |
+| 120 s | 38.480% | 32.932% |
+
+**Public baseline: 0/4 below 10%. Research candidate: 1/4, NOT deployed.**
+The research candidate improves each standard hybrid window but regresses one development
+case and one cross-device case. These repeatedly inspected windows are exploratory evidence,
+not a new blind validation set. Full failed ablations remain available.
+
+- **Problem and solution:** propagate an uncertain vehicle estimate through a GNSS outage using phone inertial sensors; do not substitute map display for localization.
+- **Runtime architecture:** causal sensor synchronization → conditioning/alignment → six-state EKF → gated GRU speed residual → bounded verified GNSS recovery → engine-owned map/local ENU display.
+- **AI:** unchanged 4,257-parameter, 32-unit GRU, 10 features, 20 steps; predicts speed residual, never geographic position. Source-domain validation MAE is 6.814 m/s versus 12.226 classical. Transfer remains mixed.
+- **Android:** 194 Kotlin tests, lint and debug/signed-release builds pass. 293 Python tests pass. The signed 2.4.0 upgrade launched repeatedly, rendered all primary screens, exposed required sensors and produced no crash-buffer entry on a vivo V2513. [Details and limits](technical-evidence/finalist_20261005/ANDROID_DEVICE_VERIFICATION.md).
+- **Map matching:** RESEARCH ONLY. Existing road-branch failures prevent a safe runtime accuracy claim. Lane-level accuracy is unproven.
+- **Recovery:** existing distinct-fix verification and bounded correction remain; phone recovery has not been remeasured.
+- **External input:** candidate SI-unit replay adapter accepts synthetic 200 Hz input and normalizes to the model's 10 Hz cadence. No physical FOG or native 200 Hz navigation claim.
+- **Cross-device:** the heading candidate still worsens Mountain View 30 s hybrid drift (40.866% → 41.160%); Mountain View 60 s and Los Angeles 30 s improve modestly. All cases are reported.
+
+[Two-minute judge evidence](SIH26168_JUDGE_EVIDENCE.md) ·
+[Engineering report and reproduction](technical-evidence/finalist_20261005/ENGINEERING_REPORT.md) ·
+[Complete ablations](technical-evidence/finalist_20261005/all_ablations.csv) ·
+[Source and reproduction boundaries](research/README.md) ·
+[Release status](RELEASE_2_4_0.md)
+
+[Public 2.4.0 APK](https://navghost-idr.vercel.app/downloads/NavGhost-Android-v2.4.0.apk) ·
+[Website](https://navghost-idr.vercel.app/) ·
+[Historical demo—not current accuracy evidence](https://youtube.com/shorts/dDlNKvobRqo)
+
+**MOVING VEHICLE VALIDATION REQUIRED.** Configure the automatic preset while parked,
+mount the phone securely, and never interact as the driver. After parking, export
+the session privately and validate it using the [field protocol](technical-evidence/docs/phase11_field_validation.md).
+
+---
+
+## HISTORICAL / SUPERSEDED — prior 2.4.0 presentation
+
+The text below is preserved as historical evidence. Current source version, test counts,
+external-input status, and release status are defined above and in the judge evidence.
+
 <p align="center">
   <img src="NavGhost-README-Hero.png" alt="NavGhost — Navigation Beyond GNSS" width="100%" />
 </p>

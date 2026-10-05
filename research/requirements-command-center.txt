@@ -1,0 +1,8 @@
+# Optional observer stack. The on-device estimator does not depend on this file.
+fastapi==0.141.1
+uvicorn==0.52.4
+websockets==15.0.1
+pydantic==2.13.5
+# FastAPI TestClient, used by the Command Center regression tests.
+httpx==0.28.1
+starlette==1.6.0

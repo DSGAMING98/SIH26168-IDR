@@ -64,6 +64,7 @@ class SensorLoggingService : Service(), IdrSensorStream {
     private val freshnessTracker = GnssFreshnessTracker()
     private val rateTracker = SensorRateTracker()
     private val idrEngine = IdrEngine()
+    private val navigationInput = org.sih26168.idrlogger.engine.AndroidNavigationAdapter(idrEngine::process)
     private val fieldTestController = FieldTestController()
     private var sensorRepository: SensorRepository? = null
     private var gnssRepository: GnssLocationRepository? = null
@@ -409,7 +410,7 @@ class SensorLoggingService : Service(), IdrSensorStream {
                 rateTracker.recordNormalized(timestampNs)
                 logger?.logRuntime(sample)
                 val navigation = try {
-                    idrEngine.process(sample)
+                    navigationInput.accept(sample)
                 } catch (error: Exception) {
                     loggerErrorCount += 1
                     logger?.logEvent("IDR_ENGINE_ERROR", error.message ?: error.javaClass.simpleName)

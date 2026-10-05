@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "phase": 7,
+  "dataset": "IO-VNBD",
+  "session": "S1",
+  "role": "development_only",
+  "policy": "All blackout plus recovery spans are outside the six Phase 5 quarantine regions. No held-out metrics were inspected for configuration selection.",
+  "interval_semantics": "Half-open blackout followed by the configured causal post-blackout tail.",
+  "windows": [
+    {
+      "id": "P7_DEV_01",
+      "start_s": 1070.0,
+      "duration_s": 20.0,
+      "post_blackout_tail_s": 120.0,
+      "full_span": "[1070,1210)",
+      "selection": "movement interval within Phase 5 VALIDATION_01"
+    },
+    {
+      "id": "P7_DEV_02",
+      "start_s": 1940.0,
+      "duration_s": 30.0,
+      "post_blackout_tail_s": 120.0,
+      "full_span": "[1940,2090)",
+      "selection": "movement interval within Phase 5 VALIDATION_02"
+    },
+    {
+      "id": "P7_DEV_03",
+      "start_s": 3790.0,
+      "duration_s": 20.0,
+      "post_blackout_tail_s": 120.0,
+      "full_span": "[3790,3930)",
+      "selection": "movement interval inside TRAIN_06 and before the [4095,4335) quarantine"
+    }
+  ],
+  "profiles": {
+    "BALANCED_THREE_FIX": {
+      "stale_to_idr_timeout_s": 18.0,
+      "required_consistent_fresh_fixes": 3,
+      "maximum_verification_gap_s": 20.0,
+      "innovation_floor_m": 30.0,
+      "innovation_sigma_multiplier": 4.0,
+      "recovery_time_constant_s": 4.0,
+      "recovery_trust_ramp_s": 4.0,
+      "maximum_correction_rate_mps": 8.0
+    },
+    "FAST_TWO_FIX": {
+      "stale_to_idr_timeout_s": 15.0,
+      "required_consistent_fresh_fixes": 2,
+      "maximum_verification_gap_s": 20.0,
+      "innovation_floor_m": 25.0,
+      "innovation_sigma_multiplier": 3.0,
+      "recovery_time_constant_s": 3.0,
+      "recovery_trust_ramp_s": 3.0,
+      "maximum_correction_rate_mps": 10.0
+    },
+    "SMOOTH_THREE_FIX": {
+      "stale_to_idr_timeout_s": 18.0,
+      "required_consistent_fresh_fixes": 3,
+      "maximum_verification_gap_s": 20.0,
+      "innovation_floor_m": 30.0,
+      "innovation_sigma_multiplier": 4.0,
+      "recovery_time_constant_s": 5.0,
+      "recovery_trust_ramp_s": 5.0,
+      "maximum_correction_rate_mps": 6.0
+    }
+  }
+}

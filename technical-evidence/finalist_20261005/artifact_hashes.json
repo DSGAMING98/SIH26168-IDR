@@ -1,0 +1,15 @@
+{
+  "configs/blackouts/io_vnbd_s1.json": "ecc9df47232907ea7c52a210fc57ac534be8e13970b1dacd28dd13bf36b17db2",
+  "configs/phase4/io_vnbd_s1_classical.json": "527eb49f20e587d5d016d5967b65e28d2911397bf79db1e26a82723edd53039a",
+  "configs/phase5/io_vnbd_s1_ekf.json": "799383ac8ca8f00aaaf3453c2f7af6d77601992e8416e40a682b269b78ec96ac",
+  "configs/phase5/io_vnbd_s1_hybrid.json": "3dc32588c71c17d870a0dd9244946eec38142709711b41924be34af48b4a4b4b",
+  "configs/phase5/io_vnbd_s1_ml.json": "597a4057ff979f02e92a8277ffdf0d52a4f7b6fae453e61d64f5c767f463854f",
+  "configs/phase5/io_vnbd_s1_split.json": "575201325bac2a57ae854fbff35444d42321680585c40fa229f0af5b05217142",
+  "configs/phase6/io_vnbd_s1_map.json": "85c07a1b214a3041d50fff46fa094828d7360433e816732e2ea387e1de0fbc1e",
+  "configs/phase6/io_vnbd_s1_map_validation.json": "54f51dc31761957a2dd30fe101f1198b0d29313636b8ca8c6ae884840a7c5961",
+  "configs/phase6/io_vnbd_s1_phase6.json": "a1fa39c0aff3170ac68874bd05b1ef059bb0596525dffd0a0c8ebc69f406d952",
+  "configs/phase7/io_vnbd_s1_phase7.json": "bfcb4ebc22f8eaa1d625b35eba0c359b878c0f75f39ce8249c1d716a87d0354e",
+  "configs/phase7/io_vnbd_s1_reacquisition_development.json": "ebc424601e8a57bd148b3a884ce73ae91e74f3dc0b6b31e2ccc360aabee074cf",
+  "configs/phase8/cross_dataset_zero_shot.json": "06276e9163ef9e6fe36c501014ac102c0f64e865269c64715f57a892b03193c4",
+  "models/phase5/io_vnbd_s1/velocity_gru.pt": "fa2169781f9e499dd87fdd00038a3b4a1326181b31938cec237a7802ae0bb4ec"
+}

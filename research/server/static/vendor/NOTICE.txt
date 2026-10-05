@@ -1,0 +1,6 @@
+Leaflet 1.9.4, Copyright 2010-2023 Vladimir Agafonkin and contributors.
+Bundled unmodified leaflet.js and leaflet.css are BSD-2-Clause licensed.
+Full license: LEAFLET-LICENSE in this directory.
+Source: https://github.com/Leaflet/Leaflet/tree/v1.9.4
+Distribution: https://unpkg.com/leaflet@1.9.4/dist/
+Only optional map tiles use the internet. Dashboard scripts load locally.

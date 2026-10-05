@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "session_id": "synthetic-protocol-fixture",
+  "sequence": 0,
+  "timestamp_ns": "12345678901234567",
+  "wall_time_utc": "2026-09-08T12:00:00Z",
+  "mode": "DEMO",
+  "estimated_position": {"latitude": 0.0, "longitude": 0.0, "local_east_m": 0.0, "local_north_m": 0.0},
+  "motion": {"speed_mps": 0.0, "speed_kmh": 0.0, "heading_deg": 0.0},
+  "navigation": {"localization_state": "GNSS_ACTIVE", "gnss_state": "FRESH", "dr_duration_s": 0.0, "uncertainty_m": 5.0, "confidence": "HIGH", "alignment_state": "READY", "motion_state": "STATIONARY"},
+  "ai": {"state": "SAFETY_FALLBACK", "ml_state": "ML_REJECTED", "ood_exceedance": 2.0},
+  "sensors": {"accelerometer_hz": 50.0, "gyroscope_hz": 50.0, "magnetometer_hz": 50.0, "runtime_hz": 10.0},
+  "gnss_observability": {"satellites_visible": null, "satellites_used": null, "status_available": false, "physical_callback_count": 0, "latest_callback_age_s": null, "blackout_masks_real_fix": false},
+  "engine": {"avg_ms": 0.1, "p95_ms": 0.2},
+  "device": {"battery_percent": null, "battery_temperature_c": null, "thermal_state": null},
+  "field_test_state": "DISABLED",
+  "map_mode": "LOCAL",
+  "recording": false
+}

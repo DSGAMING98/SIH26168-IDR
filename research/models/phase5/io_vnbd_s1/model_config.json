@@ -1,0 +1,48 @@
+{
+  "input_size": 10,
+  "hidden_size": 32,
+  "num_layers": 1,
+  "maximum_residual_mps": 12.0,
+  "window_steps": 20,
+  "sample_rate_hz": 10.0,
+  "update_stride_steps": 5,
+  "seed": 26168,
+  "architecture": "one-layer GRU with a linear tanh-bounded residual head",
+  "parameter_count": 4257,
+  "checkpoint_selected_by": "minimum validation Huber loss only",
+  "best_epoch": 14,
+  "validation_metrics": {
+    "classical_speed": {
+      "mae_mps": 12.226289997260647,
+      "rmse_mps": 18.756062089466415,
+      "p95_absolute_error_mps": 42.541059252600434,
+      "mean_signed_error_mps": 9.398839743414348,
+      "correlation": 0.35136625781135317
+    },
+    "ml_corrected_speed": {
+      "mae_mps": 6.814223358220031,
+      "rmse_mps": 12.635403263404676,
+      "p95_absolute_error_mps": 30.551881167273287,
+      "mean_signed_error_mps": 5.559507730855245,
+      "correlation": 0.39525151123665847
+    },
+    "ml_measurement_residual_variance_mps2": 128.78220033954997,
+    "best_validation_huber_loss": 6.362428188323975
+  },
+  "feature_order": [
+    "conditioned_forward_acceleration_mps2",
+    "conditioned_left_acceleration_mps2",
+    "gyro_course_rate_radps",
+    "gyro_magnitude_radps",
+    "gravity_magnitude_mps2",
+    "magnetic_magnitude_ut",
+    "motion_accel_rms_mps2",
+    "motion_gyro_rms_radps",
+    "is_likely_stationary",
+    "classical_speed_mps"
+  ],
+  "prediction_target": "VBOX evaluation-reference speed minus causal classical EKF speed; VBOX is used offline as a label only",
+  "training_windows": 11818,
+  "validation_windows": 3489,
+  "training_seconds": 12.789516999997431
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "phase": 5,
+  "dataset": "IO-VNBD",
+  "session": "S1",
+  "phase4_config": "configs/phase4/io_vnbd_s1_classical.json",
+  "blackout_config": "configs/blackouts/io_vnbd_s1.json",
+  "split_config": "configs/phase5/io_vnbd_s1_split.json",
+  "ml_config": "configs/phase5/io_vnbd_s1_ml.json",
+  "ekf_config": "configs/phase5/io_vnbd_s1_ekf.json",
+  "checkpoint_path": "models/phase5/io_vnbd_s1/velocity_gru.pt",
+  "frozen_algorithm": "H1_HYBRID_EKF_ML",
+  "classical_prior": "Phase 4 V4 sensor conditioning/motion detector feeding a new six-state EKF; the Phase 4 V5 trajectory is not fed to the EKF",
+  "runtime_reference_boundary": "Estimator accepts GNSS-free runtime sensor rows, a strictly pre-blackout phone calibration, frozen configs, and the checkpoint. EvaluationReference is accepted only by the separate evaluator."
+}

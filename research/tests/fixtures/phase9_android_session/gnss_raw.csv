@@ -1,0 +1,6 @@
+logger_sequence_id,location_timestamp_ns,elapsed_seconds,wall_clock_utc,latitude_deg,longitude_deg,altitude_m,speed_mps,bearing_deg,accuracy_m,vertical_accuracy_m,speed_accuracy_mps,bearing_accuracy_deg,provider,callback_status,masked_from_runtime
+0,1000000000000,0.000000000,2026-01-01T00:00:00.000Z,12.9716,77.5946,900.0,5.0,45.0,3.0,5.0,0.2,2.0,gps,FRESH,false
+1,1001000000000,1.000000000,2026-01-01T00:00:01.000Z,12.9716,77.5946,900.0,5.0,45.0,3.0,5.0,0.2,2.0,gps,STALE,false
+2,1002000000000,2.000000000,2026-01-01T00:00:02.000Z,12.97165,77.59465,900.0,5.0,45.0,3.0,5.0,0.2,2.0,gps,FRESH,true
+3,1002500000000,2.500000000,2026-01-01T00:00:02.500Z,12.97168,77.59468,900.0,5.0,45.0,3.0,5.0,0.2,2.0,gps,FRESH,false
+4,1003500000000,3.500000000,2026-01-01T00:00:03.500Z,12.97172,77.59472,900.0,5.0,45.0,3.0,5.0,0.2,2.0,gps,FRESH,false

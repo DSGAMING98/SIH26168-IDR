@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "phase": 5,
+  "dataset": "IO-VNBD",
+  "session": "S1",
+  "time_basis": "Synchronized smartphone elapsed_s; all intervals are half-open [start_s, end_s)",
+  "policy": "Blocked time split fixed before benchmark evaluation. No random row split. Windows are constructed independently inside each interval and never cross a boundary.",
+  "quarantine_policy": {
+    "before_blackout_s": 120.0,
+    "after_blackout_end_s": 60.0,
+    "reason": "Excludes the 60-second pre-blackout calibration history plus an additional guard, every held-out blackout, and 60 seconds after it from training, validation, scaling, checkpoint selection, and EKF tuning."
+  },
+  "quarantine_intervals": [
+    {"id": "S1_10_STEADY", "start_s": 200.0, "end_s": 390.0, "blackout_start_s": 320.0, "blackout_end_s": 330.0, "duration_s": 10.0, "role": "standard_benchmark"},
+    {"id": "S1_PHASE5_SURPRISE", "start_s": 2880.0, "end_s": 3135.0, "blackout_start_s": 3000.0, "blackout_end_s": 3075.0, "duration_s": 75.0, "role": "surprise_holdout_selected_before_evaluation"},
+    {"id": "S1_120_HIGHER_SPEED", "start_s": 3375.0, "end_s": 3675.0, "blackout_start_s": 3495.0, "blackout_end_s": 3615.0, "duration_s": 120.0, "role": "standard_benchmark"},
+    {"id": "S1_60_STOP_GO", "start_s": 4095.0, "end_s": 4335.0, "blackout_start_s": 4215.0, "blackout_end_s": 4275.0, "duration_s": 60.0, "role": "standard_benchmark"},
+    {"id": "S1_30_TURNING", "start_s": 4435.0, "end_s": 4645.0, "blackout_start_s": 4555.0, "blackout_end_s": 4585.0, "duration_s": 30.0, "role": "standard_benchmark"},
+    {"id": "S1_45_JUDGE", "start_s": 4730.0, "end_s": 4955.0, "blackout_start_s": 4850.0, "blackout_end_s": 4895.0, "duration_s": 45.0, "role": "judge_holdout"}
+  ],
+  "training_intervals": [
+    {"id": "TRAIN_01", "start_s": 60.0, "end_s": 200.0},
+    {"id": "TRAIN_02", "start_s": 450.0, "end_s": 1000.0},
+    {"id": "TRAIN_03", "start_s": 1300.0, "end_s": 1900.0},
+    {"id": "TRAIN_04", "start_s": 2200.0, "end_s": 2800.0},
+    {"id": "TRAIN_05", "start_s": 3195.0, "end_s": 3375.0},
+    {"id": "TRAIN_06", "start_s": 3735.0, "end_s": 3975.0},
+    {"id": "TRAIN_07", "start_s": 5015.0, "end_s": 5174.4}
+  ],
+  "validation_intervals": [
+    {"id": "VALIDATION_01", "start_s": 1000.0, "end_s": 1300.0},
+    {"id": "VALIDATION_02", "start_s": 1900.0, "end_s": 2200.0},
+    {"id": "VALIDATION_03", "start_s": 3975.0, "end_s": 4095.0}
+  ]
+}

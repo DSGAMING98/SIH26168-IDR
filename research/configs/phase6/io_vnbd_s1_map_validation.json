@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "phase": 6,
+  "dataset": "IO-VNBD",
+  "session": "S1",
+  "time_basis": "Synchronized smartphone elapsed_s; all intervals are half-open [start_s, end_s)",
+  "selection_policy": "Three 60-second map-matcher development windows fixed inside the Phase 5 validation blocks. They do not overlap any Phase 5 quarantine interval and are the only intervals allowed for Phase 6 parameter or prior selection.",
+  "development_intervals": [
+    {"id": "MAP_DEV_01", "start_s": 1120.0, "duration_s": 60.0, "phase5_block": "VALIDATION_01"},
+    {"id": "MAP_DEV_02", "start_s": 2020.0, "duration_s": 60.0, "phase5_block": "VALIDATION_02"},
+    {"id": "MAP_DEV_03", "start_s": 4000.0, "duration_s": 60.0, "phase5_block": "VALIDATION_03"}
+  ],
+  "small_validation_comparison": [
+    {
+      "id": "TIGHT_HEADING",
+      "description": "Smaller beam/radius and stronger heading preference.",
+      "overrides": {
+        "base_search_radius_m": 12.0,
+        "uncertainty_radius_scale": 1.0,
+        "maximum_search_radius_m": 120.0,
+        "top_k_candidates": 5,
+        "beam_width": 5,
+        "distance_uncertainty_scale": 0.25,
+        "heading_sigma_deg": 25.0,
+        "transition_distance_sigma_m": 6.0,
+        "ambiguity_probability_gap": 0.15
+      }
+    },
+    {
+      "id": "BALANCED",
+      "description": "Engineering default balancing distance, heading, connectivity, and ambiguity.",
+      "overrides": {}
+    },
+    {
+      "id": "WIDE_CONTINUITY",
+      "description": "Wider uncertainty search and beam with softer local scores.",
+      "overrides": {
+        "base_search_radius_m": 20.0,
+        "uncertainty_radius_scale": 2.0,
+        "maximum_search_radius_m": 220.0,
+        "top_k_candidates": 10,
+        "beam_width": 10,
+        "distance_uncertainty_scale": 0.5,
+        "heading_sigma_deg": 45.0,
+        "transition_distance_sigma_m": 12.0,
+        "ambiguity_probability_gap": 0.1
+      }
+    }
+  ],
+  "held_out_scenarios": [
+    {"id": "S1_10_STEADY", "start_s": 320.0, "duration_s": 10.0},
+    {"id": "S1_PHASE5_SURPRISE", "start_s": 3000.0, "duration_s": 75.0},
+    {"id": "S1_120_HIGHER_SPEED", "start_s": 3495.0, "duration_s": 120.0},
+    {"id": "S1_60_STOP_GO", "start_s": 4215.0, "duration_s": 60.0},
+    {"id": "S1_30_TURNING", "start_s": 4555.0, "duration_s": 30.0},
+    {"id": "S1_45_JUDGE", "start_s": 4850.0, "duration_s": 45.0}
+  ]
+}

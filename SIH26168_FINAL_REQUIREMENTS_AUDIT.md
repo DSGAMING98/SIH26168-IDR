@@ -1,5 +1,9 @@
 # SIH26168 final requirements audit
 
+**HISTORICAL / SUPERSEDED:** the earlier 2.4.0 matrix is retained below.
+See [current requirement evidence](SIH26168_JUDGE_EVIDENCE.md) for the tested
+external-input adapter, current host test totals, and current 2.4.0 release status.
+
 Audit date: 2026-10-05. App source baseline: NavGhost 2.4.0, root engineering commit `74f57f3` (based on `d52c1242e981bdb84a445d2a749d3c7a280691a2`). The evidence bundle contains the full tracked Android project as of this audit. The public datasets and host replays measure research estimators; they are not a physical road-accuracy certification of the current APK.
 
 Status meanings: **PASS** = demonstrated in the stated scope; **PARTIAL** = implemented or measured, but missing a required performance or field-validation condition; **FAIL** = requirement target missed; **NOT APPLICABLE** = dataset or component cannot fairly be evaluated with available inputs.

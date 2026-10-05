@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "phase": 4,
+  "dataset": "IO-VNBD",
+  "session": "S1",
+  "algorithm_version": "calibrated_classical_dr_v1",
+  "engineering_basis": "Fixed from IO-VNBD documentation, official Android sensor semantics, sensor physics, and runtime-visible S1 statistics; never selected by VBOX error.",
+  "coordinate_convention": {
+    "device": "IO-VNBD mounted-phone axes; documented +X travel, gravity-derived +Up, +Left = Up cross Forward",
+    "vehicle": "+Forward, +Left, +Up",
+    "navigation": "local ENU: +X East, +Y North, +Z Up",
+    "course": "degrees clockwise from North",
+    "tilt": "derived from measured gravity; exported Euler pitch/roll are diagnostic only"
+  },
+  "calibration": {
+    "window_s": 60.0,
+    "moving_speed_threshold_mps": 5.0,
+    "minimum_yaw_anchors": 3,
+    "maximum_yaw_dispersion_deg": 25.0,
+    "fallback": "latest distinct pre-blackout phone-GNSS course minus simultaneous exported azimuth, propagated to blackout start by azimuth change"
+  },
+  "filtering": {
+    "type": "first-order causal IIR low-pass",
+    "order": 1,
+    "cutoff_hz": 1.0,
+    "discretization": "alpha = 1 - exp(-2*pi*cutoff*dt)",
+    "causal": true
+  },
+  "heading": {
+    "gyro_yaw_axis": "y",
+    "gyro_course_scale": -1.0,
+    "correction_time_constant_s": 10.0,
+    "basis": "Exported gyroscope Y with negative sign matched pre-blackout phone-GNSS course changes (not VBOX); app/export axes are not standard Android axes."
+  },
+  "magnetometer": {
+    "plausible_min_ut": 25.0,
+    "plausible_max_ut": 65.0,
+    "maximum_magnitude_rate_utps": 12.0,
+    "maximum_orientation_rate_degps": 90.0,
+    "maximum_heading_innovation_deg": 45.0,
+    "policy": "Apply slow exported-azimuth correction only when magnitude, change rate, azimuth rate, and gyro-heading innovation all pass."
+  },
+  "bias": {
+    "minimum_stationary_samples": 20,
+    "maximum_accel_bias_mps2": 0.5,
+    "maximum_gyro_bias_radps": 0.05,
+    "policy": "Robust median only from causally confirmed pre-blackout stationary samples; otherwise exactly zero with fallback recorded."
+  },
+  "motion_state": {
+    "window_s": 1.0,
+    "enter_accel_rms_mps2": 0.35,
+    "exit_accel_rms_mps2": 0.6,
+    "enter_gyro_rms_radps": 0.04,
+    "exit_gyro_rms_radps": 0.08,
+    "gravity_tolerance_mps2": 0.15,
+    "enter_persistence_s": 2.0,
+    "exit_persistence_s": 0.5,
+    "zupt_policy": "Set horizontal velocity to zero and hold position only in LIKELY_STATIONARY; no generic moving-state damping."
+  },
+  "maximum_dt_s": 0.5,
+  "ablations": [
+    "V0_RAW_PHASE3",
+    "V1_ORIENTATION_ALIGNMENT",
+    "V2_ORIENTATION_PLUS_CONDITIONING",
+    "V3_HEADING_STABILIZED",
+    "V4_MOTION_AWARE",
+    "V5_PHASE4_COMBINED"
+  ],
+  "benchmark_config": "configs/blackouts/io_vnbd_s1.json",
+  "custom_judge_scenario": {
+    "id": "S1_45_JUDGE",
+    "start_s": 4850.0,
+    "duration_s": 45.0,
+    "type": "judge_style_custom_duration",
+    "standard": false
+  }
+}

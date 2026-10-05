@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "phase": 5,
+  "dataset": "IO-VNBD",
+  "session": "S1",
+  "state_vector": ["east_m", "north_m", "forward_speed_mps", "yaw_rad_clockwise_from_north", "forward_accel_bias_mps2", "gyro_yaw_bias_radps"],
+  "engineering_basis": "Fixed before benchmark evaluation from Phase 4 runtime sensor behavior, validation residuals where stated, and conservative vehicle-sensor assumptions; never tuned on benchmark drift.",
+  "process_noise": {
+    "acceleration_std_mps2": 0.8,
+    "yaw_rate_std_radps": 0.08,
+    "accel_bias_random_walk_std_mps2_sqrt_s": 0.015,
+    "gyro_bias_random_walk_std_radps_sqrt_s": 0.0015
+  },
+  "initial_covariance": {
+    "position_sigma_floor_m": 3.0,
+    "speed_sigma_mps": 2.0,
+    "yaw_sigma_deg": 15.0,
+    "accel_bias_sigma_mps2": 0.25,
+    "gyro_bias_sigma_radps": 0.03,
+    "position_policy": "maximum of phone GNSS accuracy and floor; no VBOX benchmark error"
+  },
+  "measurements": {
+    "stationary_speed_std_mps": 0.25,
+    "heading_std_deg": 15.0,
+    "ml_speed_variance": "frozen non-benchmark validation residual variance"
+  },
+  "innovation_gating": {
+    "type": "scalar normalized innovation squared (Mahalanobis squared)",
+    "speed_nis_threshold": 9.0,
+    "heading_nis_threshold": 9.0,
+    "stationary_nis_threshold": 100.0
+  },
+  "runtime_updates": {
+    "stationary_updates": true,
+    "gated_heading_updates": false,
+    "heading_policy": "Implemented but disabled in the frozen default because Phase 4 V5 magnetic/orientation correction was not consistently beneficial.",
+    "minimum_ml_variance_mps2": 0.25
+  },
+  "ood_safety": {
+    "diagnostic": "maximum normalized feature exceedance beyond training-only 0.5/99.5 percentile bounds",
+    "soft_exceedance": 0.5,
+    "hard_exceedance": 3.0,
+    "variance_inflation": 4.0
+  },
+  "minimum_variance": 1e-9,
+  "maximum_dt_s": 0.5
+}

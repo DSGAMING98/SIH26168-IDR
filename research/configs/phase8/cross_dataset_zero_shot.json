@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "phase": 8,
+  "status": "frozen_before_reference_evaluation",
+  "protocol": "zero_shot_no_target_training",
+  "frozen_utc": "2026-09-01T12:05:00Z",
+  "source_dataset": "Google Smartphone Decimeter 2022 local train subset",
+  "selection_basis": "Session/device diversity plus causal runtime-only WLS displacement-speed and gyroscope magnitude. No ground-truth rows or error outcomes were read before these windows were frozen.",
+  "integrity": {
+    "phase5_checkpoint": {
+      "path": "models/phase5/io_vnbd_s1/velocity_gru.pt",
+      "sha256": "fa2169781f9e499dd87fdd00038a3b4a1326181b31938cec237a7802ae0bb4ec"
+    },
+    "phase5_scaler": {
+      "path": "models/phase5/io_vnbd_s1/feature_scaler.json",
+      "sha256": "5ddea9cf91db0071528b56fc1d303edd0850769efdd53f77c03b0feba9cbf36a"
+    },
+    "phase6_config": {
+      "path": "configs/phase6/io_vnbd_s1_phase6.json",
+      "sha256": "a1fa39c0aff3170ac68874bd05b1ef059bb0596525dffd0a0c8ebc69f406d952"
+    },
+    "phase7_config": {
+      "path": "configs/phase7/io_vnbd_s1_phase7.json",
+      "sha256": "bfcb4ebc22f8eaa1d625b35eba0c359b878c0f75f39ce8249c1d716a87d0354e"
+    }
+  },
+  "adaptation": {
+    "effective_rate_hz": 10.0,
+    "resampling": "right-closed trailing-bin arithmetic mean; output at bin end; only source timestamps <= output timestamp",
+    "gravity_estimate": "causal first-order low-pass direction from accelerometer, normalized to 9.80665 m/s^2",
+    "gravity_time_constant_s": 2.0,
+    "attitude": "causal gravity plus calibrated uncalibrated-magnetometer basis; a fixed device-horizontal motion axis is the principal horizontal acceleration axis from the strictly pre-blackout 60-second runtime IMU window",
+    "yaw_alignment": "circular mean of causal 5-second WLS course minus simultaneous magnetic inferred-axis heading over the strictly pre-blackout 60-second calibration interval; the axis eigenvector sign ambiguity is thereby resolved without labels",
+    "gnss_motion_horizon_s": 5.0,
+    "pre_blackout_calibration_s": 60.0,
+    "map_matching": "not applicable outside the S1 map region",
+    "phase7": "not applicable: WLS positions provide no defensible per-fix accuracy field required by the frozen Phase 7 validator"
+  },
+  "sessions": [
+    {
+      "id": "SDC_MTV_PIXEL4XL",
+      "path": "smartphone-decimeter-2022/train/2020-05-15-US-MTV-1/GooglePixel4XL",
+      "device": "Google Pixel 4 XL",
+      "location": "Mountain View, US",
+      "native_rates_hz": {"accelerometer": 52.63, "gyroscope": 52.63, "magnetometer": 100.0, "wls_gnss": 1.0, "reference": 1.0}
+    },
+    {
+      "id": "SDC_LAX_PIXEL5",
+      "path": "smartphone-decimeter-2022/train/2021-12-07-US-LAX-1/GooglePixel5",
+      "device": "Google Pixel 5",
+      "location": "Los Angeles, US",
+      "native_rates_hz": {"accelerometer": 52.63, "gyroscope": 52.63, "magnetometer": 100.0, "wls_gnss": 1.0, "reference": 1.0}
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "SDC_MTV_10_STEADY",
+      "session": "SDC_MTV_PIXEL4XL",
+      "start_s": 240.0,
+      "duration_s": 10.0,
+      "type": "runtime_signal_steady",
+      "selection_evidence": "Lowest 10-second mean gyroscope magnitude among moving candidate windows: approximately 0.012 rad/s; causal WLS speed median approximately 5.6 m/s."
+    },
+    {
+      "id": "SDC_MTV_30_DYNAMIC",
+      "session": "SDC_MTV_PIXEL4XL",
+      "start_s": 968.0,
+      "duration_s": 30.0,
+      "type": "runtime_signal_dynamic",
+      "selection_evidence": "Highest 30-second mean gyroscope magnitude among moving candidates: approximately 0.228 rad/s; causal WLS speed median approximately 10.6 m/s."
+    },
+    {
+      "id": "SDC_MTV_60_HIGHER_SPEED",
+      "session": "SDC_MTV_PIXEL4XL",
+      "start_s": 1800.0,
+      "duration_s": 60.0,
+      "type": "runtime_signal_longer_higher_speed",
+      "selection_evidence": "Independent interior 60-second segment with causal WLS speed median approximately 27.1 m/s and mean gyroscope magnitude approximately 0.110 rad/s."
+    },
+    {
+      "id": "SDC_LAX_30_DYNAMIC",
+      "session": "SDC_LAX_PIXEL5",
+      "start_s": 1577.0,
+      "duration_s": 30.0,
+      "type": "second_device_location_dynamic",
+      "selection_evidence": "Second device/location; high 30-second runtime gyroscope activity approximately 0.130 rad/s and causal WLS speed median approximately 16.3 m/s."
+    }
+  ]
+}

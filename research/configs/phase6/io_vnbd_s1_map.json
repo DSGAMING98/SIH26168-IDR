@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "phase": 6,
+  "dataset": "IO-VNBD",
+  "session": "S1",
+  "source": "OpenStreetMap contributors via Overpass API",
+  "license": "Open Database License (ODbL); attribution required",
+  "static_region_policy": "One pre-downloaded fixed region, selected once from the full S1 smartphone GNSS envelope plus a fixed buffer. It is never changed per blackout and VBOX was not used to select it.",
+  "bounds_wgs84": {
+    "south": 52.3944,
+    "west": -1.6074,
+    "north": 52.4239,
+    "east": -1.5013
+  },
+  "road_classes": [
+    "motorway",
+    "motorway_link",
+    "trunk",
+    "trunk_link",
+    "primary",
+    "primary_link",
+    "secondary",
+    "secondary_link",
+    "tertiary",
+    "tertiary_link",
+    "residential",
+    "unclassified",
+    "service",
+    "living_street"
+  ],
+  "excluded_access_values": ["no", "private"],
+  "overpass_url": "https://overpass-api.de/api/interpreter",
+  "cache_path": "data/map_cache/io_vnbd_s1/road_graph.json.gz",
+  "metadata_path": "data/map_cache/io_vnbd_s1/metadata.json"
+}

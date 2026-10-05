@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "dataset": "IO-VNBD",
+  "session": "S1",
+  "time_basis": "Synchronized smartphone elapsed_s from the validated S-S1 stream",
+  "interval_semantics": "Half-open: start_s <= elapsed_s < start_s + duration_s",
+  "selection_method": "Deterministic windows selected from measured VBOX reference speed, yaw-rate, and longitudinal-acceleration summaries; labels describe signal behavior, not inferred road semantics.",
+  "field_policy": {
+    "hidden_gnss_derived": [
+      "gps_latitude_deg",
+      "gps_longitude_deg",
+      "gps_altitude_m",
+      "gps_speed_source",
+      "gps_speed_mps",
+      "gps_speed_kmh",
+      "gps_accuracy_m",
+      "gps_orientation_deg",
+      "gps_satellites_in_range"
+    ],
+    "runtime_sensor_fields": [
+      "elapsed_s",
+      "time_since_start_ms",
+      "timestamp_local",
+      "accelerometer_x_mps2",
+      "accelerometer_y_mps2",
+      "accelerometer_z_mps2",
+      "gravity_x_mps2",
+      "gravity_y_mps2",
+      "gravity_z_mps2",
+      "gyroscope_x_radps",
+      "gyroscope_y_radps",
+      "gyroscope_z_radps",
+      "magnetic_field_x_ut",
+      "magnetic_field_y_ut",
+      "magnetic_field_z_ut",
+      "orientation_azimuth_deg",
+      "orientation_pitch_deg",
+      "orientation_roll_deg",
+      "gnss_available"
+    ],
+    "classification_note": "GPS orientation is GNSS-derived and hidden. Azimuth, pitch, and roll are the separately documented Android phone-orientation sensor outputs and remain available. VBOX fields are evaluation-only."
+  },
+  "scenarios": [
+    {
+      "id": "S1_10_STEADY",
+      "start_s": 320.0,
+      "duration_s": 10.0,
+      "type": "straight_steady_motion",
+      "standard": true,
+      "selection_evidence": "Low speed variation and low accumulated absolute yaw rotation in the measured reference window."
+    },
+    {
+      "id": "S1_30_TURNING",
+      "start_s": 4555.0,
+      "duration_s": 30.0,
+      "type": "turning_dynamic_motion",
+      "standard": true,
+      "selection_evidence": "Large accumulated absolute yaw rotation in the measured reference window."
+    },
+    {
+      "id": "S1_60_STOP_GO",
+      "start_s": 4215.0,
+      "duration_s": 60.0,
+      "type": "stop_go_low_speed",
+      "standard": true,
+      "selection_evidence": "More than half the measured reference samples are below 3 km/h, followed by higher-speed motion."
+    },
+    {
+      "id": "S1_120_HIGHER_SPEED",
+      "start_s": 3495.0,
+      "duration_s": 120.0,
+      "type": "higher_speed_motion",
+      "standard": true,
+      "selection_evidence": "Sustained higher measured reference speed with no samples below 3 km/h."
+    },
+    {
+      "id": "S1_45_DYNAMIC_CUSTOM",
+      "start_s": 4850.0,
+      "duration_s": 45.0,
+      "type": "dynamic_custom_duration",
+      "standard": false,
+      "selection_evidence": "Non-standard duration demonstration with speed, turning, stopping, and longitudinal-acceleration variation."
+    }
+  ]
+}

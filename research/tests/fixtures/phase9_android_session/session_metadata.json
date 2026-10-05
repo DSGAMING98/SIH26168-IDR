@@ -1,0 +1,94 @@
+{
+  "schema_version": 2,
+  "session_id": "synthetic_phase9_android_session",
+  "device_manufacturer": "Synthetic",
+  "device_model": "FixturePhone",
+  "android_version": "16",
+  "android_sdk": 36,
+  "app_version": "0.9.0",
+  "session_origin_monotonic_ns": 1000000000000,
+  "session_start_utc": "2026-01-01T00:00:00.000Z",
+  "session_end_utc": "2026-01-01T00:00:04.000Z",
+  "timestamp_semantics": "Synthetic SensorEvent.timestamp and Location.elapsedRealtimeNanos monotonic nanoseconds.",
+  "device_frame": "Android sensor frame: +X right, +Y toward phone top, +Z out of screen; no vehicle-forward claim.",
+  "units": {
+    "accelerometer": "m/s^2",
+    "gyroscope": "rad/s",
+    "magnetometer": "microtesla",
+    "speed": "m/s",
+    "angles": "degrees",
+    "position": "WGS84 latitude/longitude degrees"
+  },
+  "requested_sampling_period_us": 20000,
+  "normalized_target_hz": 10.0,
+  "location_provider": "gps",
+  "storage": "synthetic fixture; app-private local files; no upload or analytics",
+  "availability": {
+    "accelerometer": true,
+    "gyroscope": true,
+    "magnetometer": true,
+    "gravity": true,
+    "rotation_vector": true,
+    "gps_provider": true
+  },
+  "sensors": [
+    {
+      "kind": "accelerometer",
+      "available": true,
+      "name": "Synthetic accelerometer",
+      "vendor": "Fixture",
+      "resolution": 0.001,
+      "maximum_range": 100.0
+    },
+    {
+      "kind": "gyroscope",
+      "available": true,
+      "name": "Synthetic gyroscope",
+      "vendor": "Fixture",
+      "resolution": 0.001,
+      "maximum_range": 100.0
+    },
+    {
+      "kind": "magnetometer",
+      "available": true,
+      "name": "Synthetic magnetometer",
+      "vendor": "Fixture",
+      "resolution": 0.001,
+      "maximum_range": 100.0
+    },
+    {
+      "kind": "gravity",
+      "available": true,
+      "name": "Synthetic gravity",
+      "vendor": "Fixture",
+      "resolution": 0.001,
+      "maximum_range": 100.0
+    },
+    {
+      "kind": "rotation_vector",
+      "available": true,
+      "name": "Synthetic rotation_vector",
+      "vendor": "Fixture",
+      "resolution": 0.001,
+      "maximum_range": 100.0
+    }
+  ],
+  "observed_rates": {
+    "accelerometer_hz": 50.0,
+    "gyroscope_hz": 50.0,
+    "magnetometer_hz": 50.0,
+    "gravity_hz": 50.0,
+    "rotation_vector_hz": 50.0,
+    "normalized_hz": 10.0
+  },
+  "gnss_diagnostics": {
+    "physical_callback_count": 5,
+    "last_physical_gnss_timestamp_ns": 1003500000000,
+    "first_valid_fix_timestamp_ns": 1000000000000,
+    "time_to_first_fix_seconds": 0.0,
+    "gnss_status_available": true,
+    "satellites_visible": 12,
+    "satellites_used_in_fix": 6
+  },
+  "fixture_notice": "SYNTHETIC ONLY \u2014 contains no real location recording"
+}

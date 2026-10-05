@@ -1,0 +1,49 @@
+/* Readable operator-console sizing, including narrow panels and text zoom. */
+body { font-size:16px; }
+button,select { min-height:42px; }
+.identity small,.console-title span,.session-meta,.tag,.eyebrow,.map-status,
+.map-footer,.state-sub,.state-details,.state-details strong,.compact-metrics span,
+.timeline-item,.timeline-item small,.diagnostic-grid .eyebrow,#fieldMap,#events li,
+#events time,footer,footer>span,.privacy-note,.speed-block .eyebrow,.big-value small {
+  font-size:12px;
+}
+.connection strong,.connection small,.session-select label,.session-select select,
+.map-actions button,.map-empty p,.map-empty code,.quiet,.empty-inline,dl,
+.ai-panel>p,.ai-panel .label-row:last-child,#events .empty-inline {
+  font-size:14px;
+}
+.map-empty code { max-width:100%; overflow-wrap:anywhere; }
+.stale-overlay { font-size:12px; max-width:95%; white-space:normal; text-align:center; }
+.primary-grid,.lower-grid { grid-template-columns:minmax(0,1fr) 330px; }
+.diagnostic-grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+dl { grid-template-columns:minmax(0,1fr) minmax(0,1fr); }
+.timeline { min-height:62px; }
+.identity small { letter-spacing:1px; font-size:12px; }
+.console-title { letter-spacing:1.5px; }
+.connection { min-width:225px; }
+.state-panel h2 { overflow-wrap:anywhere; }
+.state-details { flex-wrap:wrap; }
+.map-footer { flex-wrap:wrap; }
+.diagnostic-grid>div { min-width:0; }
+@media(max-width:1280px) {
+  .diagnostic-grid { grid-template-columns:1fr; }
+  .diagnostic-grid>div+div { padding:14px 0 0; border-left:0; border-top:1px solid var(--line); }
+}
+@media(max-width:950px) {
+  .primary-grid,.lower-grid { grid-template-columns:1fr; }
+  .status-column { display:grid; grid-template-columns:1fr 1fr; }
+  .state-panel { grid-column:1/-1; }
+  .map-stage { min-height:350px; }
+  .connection { min-width:0; }
+  .map-actions { flex-wrap:wrap; max-width:none; }
+}
+@media(max-width:550px) {
+  .topbar { flex-wrap:wrap; }
+  .connection { max-width:100%; }
+  .status-column { grid-template-columns:1fr; }
+  .panel-heading { flex-direction:column; align-items:flex-start; }
+  .map-actions { justify-content:flex-start; }
+  .session-select { flex-wrap:wrap; }
+  .session-meta { flex-wrap:wrap; }
+  .legend { flex-wrap:wrap; }
+}

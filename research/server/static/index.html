@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>NavGhost · Command Center</title>
+  <link rel="stylesheet" href="/static/vendor/leaflet.css">
+  <link rel="stylesheet" href="/static/dashboard.css">
+  <link rel="stylesheet" href="/static/readability.css">
+  <script src="/static/vendor/leaflet.js" defer></script>
+  <script src="/static/dashboard.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="identity" href="/" aria-label="NavGhost Command Center"><svg viewBox="0 0 44 44" aria-hidden="true"><path d="M22 4 38 36 22 29 6 36Z"/><path d="M22 13v14"/></svg><span><strong>NAV<span>GHOST</span></strong><small>NAVIGATION BEYOND GNSS</small></span></a>
+    <div class="console-title">COMMAND CENTER<span>ON-DEVICE LOCALIZATION · LIVE TELEMETRY</span></div>
+    <div class="connection"><span id="connectionDot" class="dot"></span><div><strong id="connectionText">CONNECTING TO SERVER</strong><small id="updateAge">No telemetry received</small></div></div>
+  </header>
+  <main>
+    <div class="sessionbar"><div class="session-select"><label for="sessionSelect">SESSION</label><select id="sessionSelect" aria-label="Observed phone session"><option value="">Waiting for phone</option></select><span id="mode" class="tag">NO STREAM</span></div><div class="session-meta"><span>ELAPSED <strong id="sessionTime">--:--</strong></span><span>PACKET <strong id="sequence">—</strong></span><span id="recording" class="tag muted">NOT RECORDING</span></div></div>
+    <div class="primary-grid">
+      <section class="panel map-panel" aria-label="NavGhost estimated trajectory">
+        <div class="panel-heading"><div><p class="eyebrow">ESTIMATED TRAJECTORY</p><h1>Your phone leads.<br><span>The map follows.</span></h1></div><div class="map-actions"><button id="viewToggle" type="button">Street map</button><button id="follow" type="button" aria-pressed="true">Follow on</button><button id="recenter" type="button">Recenter <span aria-hidden="true">⌖</span></button></div></div>
+        <div class="map-stage"><div id="map" aria-label="OpenStreetMap visualization"></div><canvas id="localMap" aria-label="Offline local metric trajectory"></canvas><div id="mapEmpty" class="map-empty"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 8 53 51 32 42 11 51Z"/><circle cx="32" cy="32" r="29"/></svg><h2>Ready when your phone is.</h2><p>Enable Command Center in NavGhost.<br>Only the phone’s estimated position appears here.</p><code id="phoneEndpoint">ws://&lt;LAPTOP_IP&gt;:8000/ws/telemetry</code></div><div id="offlineBanner" class="map-status">LOCAL VIEW · WORKS WITHOUT MAP TILES</div><div id="staleOverlay" class="stale-overlay" hidden>LAST KNOWN ESTIMATE · STREAM OFFLINE</div></div>
+        <div class="map-footer"><div class="legend"><span><i class="gnss"></i>GNSS</span><span><i class="idr"></i>IDR</span><span><i class="recovery"></i>Recovery</span><span><i class="uncertainty"></i>Uncertainty</span></div><span id="coordinates">POSITION UNAVAILABLE</span></div>
+      </section>
+      <aside class="status-column" aria-label="Navigation status">
+        <section class="panel state-panel"><p class="eyebrow">LOCALIZATION STATE</p><h2 id="navState">WAITING<br>FOR PHONE</h2><div class="state-sub"><span id="gnssState">GNSS unavailable</span><span id="confidence" class="tag">—</span></div><div class="state-details"><span>Alignment <strong id="alignment">—</strong></span><span>Motion <strong id="motionState">—</strong></span></div></section>
+        <section class="panel motion-panel"><div class="speed-block"><p class="eyebrow">ESTIMATED SPEED</p><div class="big-value"><span id="speed">—</span><small>km/h</small></div><span id="speedMps" class="quiet">— m/s</span></div><div class="compact-metrics"><div><span>HEADING</span><strong id="heading">—</strong></div><div><span>UNCERTAINTY</span><strong id="uncertainty">—</strong></div><div><span>DEAD RECKONING</span><strong id="drTime">—</strong></div></div></section>
+        <section class="panel ai-panel"><div class="label-row"><p class="eyebrow">AI SAFETY GATE</p><span id="aiIndicator" class="mini-dot"></span></div><h3 id="aiState">No snapshot yet</h3><p id="mlState" class="quiet">Unavailable until the phone connects</p><div class="label-row"><span class="quiet">OOD exceedance</span><strong id="ood">—</strong></div></section>
+      </aside>
+    </div>
+    <section class="panel timeline-panel" aria-label="Navigation state transitions"><div class="label-row"><p class="eyebrow">STATE TIMELINE</p><span class="quiet">Transitions only · newest at right</span></div><div id="timeline" class="timeline"><span class="empty-inline">GNSS → IDR → recovery transitions will appear here.</span></div></section>
+    <div class="lower-grid">
+      <section class="panel diagnostics"><div class="label-row"><h2>System health</h2><span class="tag">PHONE TELEMETRY</span></div><div class="diagnostic-grid">
+        <div><p class="eyebrow">SENSOR RATES</p><dl><dt>Accelerometer</dt><dd id="accel">—</dd><dt>Gyroscope</dt><dd id="gyro">—</dd><dt>Magnetometer</dt><dd id="mag">—</dd><dt>Runtime</dt><dd id="runtime">—</dd></dl></div>
+        <div><p class="eyebrow">GNSS OBSERVABILITY</p><dl><dt>Visible / used</dt><dd id="satellites">— / —</dd><dt>Status callback</dt><dd id="satStatus">—</dd><dt>Physical callbacks</dt><dd id="callbacks">—</dd><dt>Latest callback age</dt><dd id="callbackAge">—</dd><dt>Masking a real fix</dt><dd id="realMask">—</dd></dl></div>
+        <div><p class="eyebrow">DEVICE & ENGINE</p><dl><dt>Engine avg / P95</dt><dd id="engine">— / —</dd><dt>Battery</dt><dd id="battery">—</dd><dt>Temperature</dt><dd id="temperature">—</dd><dt>Thermal state</dt><dd id="thermal">—</dd><dt>Field / map mode</dt><dd id="fieldMap">—</dd></dl></div>
+      </div></section>
+      <section class="panel events-panel"><div class="label-row"><h2>Event stream</h2><span id="eventCount" class="quiet">0 events</span></div><ol id="events"><li class="empty-inline">Meaningful state changes appear here. Telemetry frames do not flood this log.</li></ol></section>
+    </div>
+    <footer><p><span class="footer-dot"></span>Localization stays on the phone. Server, Wi-Fi and dashboard failures do not stop NavGhost.</p><span>NET-PSYCHO · SIH26168</span></footer>
+    <p class="privacy-note">Read-only observer · no browser location · no stored telemetry · optional OpenStreetMap tiles use the internet and reveal the viewed map area to the tile provider. Select local view for a fully local display.</p>
+  </main>
+</body>
+</html>

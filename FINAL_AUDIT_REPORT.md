@@ -1,5 +1,9 @@
 # NAVGHOST SIH26168 FINAL AUDIT REPORT
 
+**HISTORICAL / SUPERSEDED:** this is the earlier 2.4.0 audit. Current source,
+test counts, external-input work and release status are in [judge evidence](SIH26168_JUDGE_EVIDENCE.md).
+Its measured negative results remain valid historical evidence.
+
 Audit date: 2026-10-05. Current APK: NavGhost 2.4.0 (code 41). All accuracy numbers below are labelled by source. This report does not assert a new physical-road accuracy result.
 
 ## 1. Executive Verdict
