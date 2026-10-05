@@ -1,0 +1,37 @@
+<resources>
+    <style name="AppTheme" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:colorAccent">#087F91</item>
+        <item name="android:windowBackground">#EFF6F9</item>
+        <item name="android:navigationBarColor">#EFF6F9</item>
+        <item name="android:statusBarColor">#EFF6F9</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+    <style name="AppThemeDark" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:colorAccent">#37DCE8</item>
+        <item name="android:windowBackground">@drawable/launch_background</item>
+        <item name="android:navigationBarColor">#060D16</item>
+        <item name="android:statusBarColor">#060D16</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+    <style name="AppThemeSplash" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:windowBackground">@drawable/launch_background</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowDisablePreview">false</item>
+        <item name="android:colorAccent">#37DCE8</item>
+        <item name="android:navigationBarColor">#060D16</item>
+        <item name="android:statusBarColor">#060D16</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+    <style name="AppThemeLight" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:colorAccent">#087F91</item>
+        <item name="android:windowBackground">#EFF6F9</item>
+        <item name="android:navigationBarColor">#EFF6F9</item>
+        <item name="android:statusBarColor">#EFF6F9</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+</resources>

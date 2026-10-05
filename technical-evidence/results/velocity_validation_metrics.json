@@ -1,0 +1,18 @@
+{
+  "classical_speed": {
+    "mae_mps": 12.226289997260647,
+    "rmse_mps": 18.756062089466415,
+    "p95_absolute_error_mps": 42.541059252600434,
+    "mean_signed_error_mps": 9.398839743414348,
+    "correlation": 0.35136625781135317
+  },
+  "ml_corrected_speed": {
+    "mae_mps": 6.814223358220031,
+    "rmse_mps": 12.635403263404676,
+    "p95_absolute_error_mps": 30.551881167273287,
+    "mean_signed_error_mps": 5.559507730855245,
+    "correlation": 0.39525151123665847
+  },
+  "ml_measurement_residual_variance_mps2": 128.78220033954997,
+  "best_validation_huber_loss": 6.362428188323975
+}

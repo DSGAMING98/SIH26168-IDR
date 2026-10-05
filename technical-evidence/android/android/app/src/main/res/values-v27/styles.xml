@@ -1,0 +1,8 @@
+<resources>
+    <style name="AppThemeDark">
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+    <style name="AppThemeLight">
+        <item name="android:windowLightNavigationBar">true</item>
+    </style>
+</resources>

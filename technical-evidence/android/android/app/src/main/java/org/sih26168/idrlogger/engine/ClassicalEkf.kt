@@ -95,6 +95,28 @@ class ClassicalEkf {
         if (x[SPEED] < 0.05) x[SPEED] = 0.0
     }
 
+    /**
+     * Starts a new motion segment after an inertially confirmed stop.
+     *
+     * Repeated zero-speed updates can correlate the previous braking pulse into the acceleration
+     * bias state. Carrying that correlation into departure applies artificial braking and can pin
+     * a smoothly accelerating train at zero. Re-open the acceleration-bias estimate without
+     * changing position, yaw, or the frozen model.
+     */
+    fun releaseStationaryConstraint() {
+        require(initialized)
+        x[ACCEL_BIAS] = 0.0
+        for (index in 0 until STATE_SIZE) {
+            if (index != ACCEL_BIAS) {
+                covariance[ACCEL_BIAS][index] = 0.0
+                covariance[index][ACCEL_BIAS] = 0.0
+            }
+        }
+        covariance[ACCEL_BIAS][ACCEL_BIAS] = max(covariance[ACCEL_BIAS][ACCEL_BIAS], 0.25 * 0.25)
+        covariance[SPEED][SPEED] = max(covariance[SPEED][SPEED], 1.0)
+        stabilize()
+    }
+
     /** Hard physical safety envelope for an uncorrected speed state; never invents acceleration. */
     fun constrainSpeed(maximumSpeedMps: Double) {
         require(maximumSpeedMps.isFinite() && maximumSpeedMps >= 0.0)

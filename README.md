@@ -32,6 +32,27 @@
   A phone-only intelligent dead-reckoning system that keeps estimating vehicle motion when GNSS becomes unavailable.
 </p>
 
+## Final technical status · 2026-10-05
+
+NavGhost 2.4.0 estimates vehicle motion on an Android phone when trusted GNSS is lost. Causal phone sensors feed a six-state EKF; a frozen, out-of-distribution-gated GRU can correct speed; uncertainty grows during denial; fresh GNSS is verified before bounded recovery. No external navigation hardware, account, backend or cloud inference is required. Maps display the estimator's position and are not a location source.
+
+**Verdict: ready to demonstrate as a research prototype; not ready to claim full SIH26168 final-solution compliance.** The four frozen standard IO-VNBD S1 blackouts have Hybrid drift of **22.655%, 18.571%, 28.232%, 38.480%** at 10, 30, 60 and 120 seconds. Thus **0/4 meet the SIH under-10% drift target**. Lane-level accuracy, runtime road matching and the requested external-IMU/FOG edge pathway are also not demonstrated. The 75-second surprise holdout achieved 3.855%, but does not establish general compliance. These are offline replay numbers, not measured accuracy of the latest APK on a moving phone.
+
+| Blackout | Reference distance | Hybrid final error | Drift |
+|---:|---:|---:|---:|
+| 10 s | 154.16 m | 34.92 m | 22.655% |
+| 30 s | 200.92 m | 37.31 m | 18.571% |
+| 60 s | 262.79 m | 74.19 m | 28.232% |
+| 120 s | 1706.39 m | 656.62 m | 38.480% |
+
+The [full performance table](technical-evidence/results/FINAL_PERFORMANCE_TABLE.md) includes Raw DR, EKF, Hybrid, research-only map matching, RMSE/P95, uncertainty, recovery, speed and cross-device results. The [requirement matrix](SIH26168_FINAL_REQUIREMENTS_AUDIT.md) gives evidence for every PASS/PARTIAL/FAIL. The [2–3 minute judge summary](technical-evidence/results/FINAL_JUDGE_SUMMARY.md) is the quickest technical read. The [current Android Studio project](technical-evidence/android/android/) includes app source and tests, while the [technical overview](technical-evidence/docs/FINAL_TECHNICAL_OVERVIEW.md) describes the pipeline.
+
+**AI:** one-layer 32-unit GRU, 10 input features, 20 steps, 4,257 parameters, 21,649-byte checkpoint. It predicts a bounded speed residual, never a geographic position. Source-domain validation speed MAE improved from 12.226 to 6.814 m/s; zero-shot results on Pixel 4 XL and Pixel 5 were mixed. Frozen model SHA-256: `fa2169781f9e499dd87fdd00038a3b4a1326181b31938cec237a7802ae0bb4ec`.
+
+**Map matching:** an offline probabilistic road matcher was evaluated but is not deployed because its frozen comparison helped only 2/6 windows against the best Phase 5 prior. **Phone evidence:** the signed update installed without clearing data and relaunched twice on Vivo V2513 / Android 16 indoors; no new moving road accuracy was measured. An observed Google 3D vendor-state restore crash prompted a narrow lifecycle fix, but comprehensive 3D field validation is still open. Older physical evidence measured roughly 50 Hz native IMU and 9.6 Hz normalized rate. **Recovery:** two distinct fresh fixes and bounded correction are implemented and host-replay tested; current moving phone recovery accuracy is unmeasured. **Uncertainty** is covariance-derived and is not a calibrated 95% interval. Keyless and configured Google 3D builds pass; local ENU remains available. Tests: 288 Python, 187 Kotlin; Android lint passes with warnings. The [APK download](https://navghost-idr.vercel.app/downloads/NavGhost-Android-v2.4.0.apk) serves the signed 2.4.0 final-audit candidate (SHA-256 `3037f409caf79bfc76713636a2e81946b27de13902319a737f3da3450cca6f0e`); the [demo video](https://youtube.com/shorts/dDlNKvobRqo?si=_gFi8ewl1akC1nOQ) is historical, not a validation of this build's accuracy.
+
+Older phase descriptions below are preserved as **historical development records**. The final status and metrics above take precedence where version numbers or test totals differ.
+
 <p align="center">
   <img src="https://img.shields.io/badge/SIH26168-Intelligent%20Dead%20Reckoning-19c6e5?style=for-the-badge" alt="SIH26168" />
   <img src="https://img.shields.io/badge/Android-API%2026%2B-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Android API 26+" />
@@ -49,8 +70,7 @@
 
 ---
 
-> **This repository is a technical-evidence bundle, not the complete production Android Studio project.**  
-> It preserves the core Android localization engine, frozen ML model evidence, training/evaluation code, benchmark outputs, plots, technical documentation, and app-test media used to explain and audit NavGhost. The latest full UI/application source is intentionally not included here.
+> **Repository layout:** the complete tracked Android Studio source is in `technical-evidence/android/android/`. Training/evaluation code, model evidence, selected benchmark outputs, plots, documentation and app-test media are in `technical-evidence/`. Large source datasets, private phone traces, signing credentials and local API keys are not published.
 
 ## The idea
 

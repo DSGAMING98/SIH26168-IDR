@@ -53,7 +53,7 @@ Drift is final blackout-relative error divided by reference distance. It is unde
 
 The locked IO-VNBD four-standard medians were 95.920% Raw, 68.048% Phase 4 V5, 24.009% EKF, and 25.444% Hybrid. These dataset-level medians are not combined into a deceptive global average.
 
-On the three moving target windows, EKF beats raw twice. Hybrid beats EKF once and degrades twice. The result is **MODERATE GENERALIZATION**: the architecture supplies useful behavior in some unseen-device cases and the runtime OOD safety reacts, but neither the S1 dynamics nor the learned correction transfers uniformly. It is not a general <10% claim.
+On the three moving target windows, EKF beats raw twice. Hybrid beats EKF once and degrades twice. The result is **MIXED ZERO-SHOT GENERALIZATION**: the architecture supplies useful behavior in one unseen-device case and the runtime OOD safety reacts, but neither the S1 dynamics nor the learned correction transfers uniformly. It is not a general <10% claim.
 
 ## Domain shift and OOD
 

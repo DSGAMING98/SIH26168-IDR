@@ -117,7 +117,13 @@ class IdrEngine(
                 }
             }
             val alignmentHeading = alignment.vehicleHeading(conditioned.deviceHeadingRad)
-            if (alignmentHeading != null) ekf.updateYaw(alignmentHeading, Math.toRadians(20.0))
+            // The Android rotation-vector heading can be magnetically distorted in rail tunnels.
+            // Once GNSS is unavailable, preserve the last trusted vehicle alignment and propagate
+            // yaw causally from the gyro instead of pulling the route toward an untrusted absolute
+            // phone heading. Fresh GNSS continues to correct yaw through updateGnssState below.
+            if (alignmentHeading != null && trustedGnss != null) {
+                ekf.updateYaw(alignmentHeading, Math.toRadians(20.0))
+            }
             if (trustedGnss == null) {
                 val speedCeiling = max(
                     config.minimumUncorrectedSpeedCeilingMps,
@@ -126,9 +132,11 @@ class IdrEngine(
                 ekf.constrainSpeed(speedCeiling)
             }
             val inertialStopConfirmed = inertialStopGate.update(dtS, conditioned)
-            val confidentlyStationary = inertialStopConfirmed || (conditioned.motionState == MotionState.LIKELY_STATIONARY &&
-                ekf.speedMps < STATIONARY_SPEED_GATE_MPS && (trustedGnss?.fix?.speedMps ?: 0.0) < STATIONARY_SPEED_GATE_MPS
-            )
+            if (inertialStopGate.justReleasedStop) ekf.releaseStationaryConstraint()
+            val confidentlyStationary = inertialStopConfirmed || (trustedGnss != null &&
+                conditioned.motionState == MotionState.LIKELY_STATIONARY &&
+                ekf.speedMps < STATIONARY_SPEED_GATE_MPS &&
+                (trustedGnss.fix.speedMps ?: 0.0) < STATIONARY_SPEED_GATE_MPS)
             if (confidentlyStationary) ekf.applyStationaryConstraint()
 
             val (mlState, inference) = if (alignment.state == AlignmentState.READY) {
@@ -159,9 +167,9 @@ class IdrEngine(
             }
 
             val suppressStationaryTranslation = confidentlyStationary ||
-                (conditioned.motionState != MotionState.MOVING &&
+                (trustedGnss != null && conditioned.motionState != MotionState.MOVING &&
                     ekf.speedMps < STATIONARY_SPEED_GATE_MPS &&
-                    (trustedGnss?.fix?.speedMps ?: 0.0) < STATIONARY_SPEED_GATE_MPS)
+                    (trustedGnss.fix.speedMps ?: 0.0) < STATIONARY_SPEED_GATE_MPS)
             val gnssResult = updateGnssState(
                 sample,
                 distinctGnss,

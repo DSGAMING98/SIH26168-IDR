@@ -16,6 +16,6 @@ The model used IO-VNBD S1 time-blocked development intervals. VBOX speed was use
 
 The one-layer 32-unit GRU has 4,257 parameters. It was trained on one journey and is not evidence of cross-device or cross-dataset generalization. OOD feature exceedance reduces or removes its EKF influence.
 
-## Android deployment plan
+## Android deployment (current app 2.4.0)
 
-The graph uses a standard GRU, tanh, and linear head, suitable for later export through PyTorch/ONNX to a mobile runtime. Phase 5 does not build that export or an Android application.
+The frozen checkpoint has a dependency-free Kotlin forward pass in `technical-evidence/android/android/app/src/main/java/org/sih26168/idrlogger/engine/FrozenVelocityModel.kt`. `CausalMlVelocity` maintains the 20-step history and applies the fixed scaler/OOD limits. `IdrEngine` accepts only bounded, gated speed-residual measurements. Phase 10 Python/Kotlin golden-vector parity is recorded in the evidence bundle. No TFLite, ONNX or cloud inference is used by the app. This deployment update does not change the Phase 5 training record or checkpoint.

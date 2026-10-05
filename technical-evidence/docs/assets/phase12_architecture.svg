@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900" role="img" aria-labelledby="title desc">
+  <title id="title">SIH26168 runtime and evaluation architecture</title>
+  <desc id="desc">Phone sensors flow causally through alignment, EKF and safety-gated GRU to the engine marker and local UI. Hidden references enter only offline evaluation.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L10,3 L0,6 Z" fill="#4ad8b5"/></marker>
+    <style>.bg{fill:#060d16}.box{fill:#0f1b28;stroke:#2a3c4d;stroke-width:2}.safe{fill:#102a2a;stroke:#4ad8b5;stroke-width:3}.eval{fill:#261f3f;stroke:#967eff;stroke-width:2}.t{font:700 24px sans-serif;fill:#f2f6fa}.s{font:500 17px sans-serif;fill:#b9c8d6}.h{font:700 17px sans-serif;fill:#4ad8b5}.e{font:700 17px sans-serif;fill:#bbaeff}.line{stroke:#4ad8b5;stroke-width:3;marker-end:url(#arrow)}.dash{stroke:#967eff;stroke-width:3;stroke-dasharray:10 8;marker-end:url(#arrow)}</style>
+  </defs>
+  <rect class="bg" width="1400" height="900" rx="32"/>
+  <text class="t" x="60" y="58">NAVGhost — NAVIGATION BEYOND GNSS — FINAL ARCHITECTURE</text>
+  <text class="h" x="60" y="96">LIVE RUNTIME • ON DEVICE • CAUSAL • PRIVATE</text>
+  <g>
+    <rect class="box" x="70" y="130" width="245" height="92" rx="16"/><text class="t" x="92" y="168">Android sensors</text><text class="s" x="92" y="198">IMU + physical GPS</text>
+    <rect class="box" x="385" y="130" width="245" height="92" rx="16"/><text class="t" x="407" y="168">Causal synchronizer</text><text class="s" x="407" y="198">~10 Hz, past-only</text>
+    <rect class="box" x="700" y="130" width="245" height="92" rx="16"/><text class="t" x="722" y="168">Conditioning</text><text class="s" x="722" y="198">gravity, filtering, motion</text>
+    <rect class="box" x="1015" y="130" width="245" height="92" rx="16"/><text class="t" x="1037" y="168">Vehicle alignment</text><text class="s" x="1037" y="198">safety-gated direction</text>
+    <path class="line" d="M315 176H375"/><path class="line" d="M630 176H690"/><path class="line" d="M945 176H1005"/>
+    <rect class="safe" x="520" y="300" width="360" height="105" rx="18"/><text class="t" x="650" y="341">6-state EKF</text><text class="s" x="570" y="374">position • speed • yaw • biases • covariance</text>
+    <path class="line" d="M1137 222V270H700V290"/>
+    <rect class="box" x="970" y="300" width="290" height="105" rx="18"/><text class="t" x="1000" y="341">Frozen GRU + OOD gate</text><text class="s" x="1000" y="374">bounded speed residual only</text>
+    <path class="line" d="M970 352H890"/>
+    <rect class="safe" x="520" y="480" width="360" height="105" rx="18"/><text class="t" x="606" y="521">Hybrid estimate</text><text class="s" x="563" y="554">GNSS trust or IDR propagation</text>
+    <path class="line" d="M700 405V470"/>
+    <rect class="box" x="520" y="655" width="360" height="105" rx="18"/><text class="t" x="552" y="696">Loss / recovery controller</text><text class="s" x="570" y="729">verify fresh fixes • bounded correction</text>
+    <path class="line" d="M700 585V645"/>
+    <rect class="box" x="955" y="655" width="330" height="105" rx="18"/><text class="t" x="996" y="696">Map / trajectory UI</text><text class="s" x="980" y="729">engine marker • local fallback</text>
+    <rect class="box" x="90" y="655" width="330" height="105" rx="18"/><text class="t" x="142" y="696">Logging / validation</text><text class="s" x="126" y="729">local export • system health</text>
+    <path class="line" d="M880 707H945"/><path class="line" d="M520 707H430"/>
+  </g>
+  <line x1="50" y1="805" x2="1350" y2="805" stroke="#2a3c4d" stroke-width="2"/>
+  <text class="e" x="60" y="842">OFFLINE EVALUATION ONLY</text>
+  <rect class="eval" x="370" y="817" width="295" height="60" rx="14"/><text class="s" x="400" y="854">VBOX / public reference</text>
+  <rect class="eval" x="780" y="817" width="300" height="60" rx="14"/><text class="s" x="812" y="854">metrics / plots / replay</text>
+  <path class="dash" d="M665 847H770"/>
+  <text class="s" x="1100" y="842">never enters IdrEngine</text>
+</svg>

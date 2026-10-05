@@ -1,41 +1,34 @@
-# NavGhost final judge summary
+# NavGhost: final judge summary
 
-## Problem
+**Status: research prototype ready to demonstrate, but not ready to claim full SIH26168 final-solution compliance.** NavGhost is a phone-only intelligent dead-reckoning system for the period between the last trusted satellite fix and verified GNSS recovery. It addresses position continuity when GNSS disappears, rather than merely displaying a cached map. The project does **not** yet demonstrate the SIH target of under-10% drift across standard blackouts, lane-level position, runtime road matching or the requested external-IMU/FOG edge pathway.
 
-Offline maps can display cached road data while GNSS is available. SIH26168 addresses the different failure where GNSS itself becomes unavailable or unreliable. The product statement is: **We are not predicting where the vehicle should be. We are estimating where the vehicle is.**
+## What happens at runtime
 
-## Architecture
+Android's GPS provider and built-in accelerometer, gyroscope, gravity/rotation sensors and optional magnetometer feed a causal 10 Hz normalized stream. Motion conditioning and phone-to-vehicle alignment feed a six-state EKF. A frozen 4,257-parameter GRU predicts only a bounded **speed residual**, not latitude or longitude. Its correction is reduced or rejected when input features are out of distribution. The engine carries covariance-derived uncertainty and applies stationary constraints.
 
-A standalone Android foreground service causally synchronizes native phone sensors near 10 Hz, performs vehicle alignment, conditions motion, propagates a six-state EKF, optionally applies an OOD-gated 4,257-parameter frozen GRU speed residual, and reconciles boundedly when fresh GNSS returns. No route, destination, OBD-II, custom hardware, cloud, account, required map key or laptop is required.
+When a simulated tunnel begins, the estimator's runtime GNSS fields are null. Physical GPS callbacks can continue into a separate evaluator-only log, but cannot feed the estimator. If alignment was never established, the engine holds position rather than inventing direction. On return, it requires two distinct fresh fixes and applies a bounded correction. A new loss during recovery returns to dead reckoning. The map is a view of the engine output. Google 3D, MapLibre and local ENU do not supply hidden location or road constraints to the estimator.
 
-## Live Android implementation
+## What the AI and evidence show
 
-**NavGhost — Navigation Beyond GNSS** version 1.1.0 has LIVE, DEMO and SYSTEM. LIVE is map-dominant and shows the engine marker, heading, state-colored trajectory, speed, uncertainty halo, localization/alignment/AI state and safe field controls. DEMO is always `NOT LIVE`, with a deterministic 27-second judge story, visible phase timeline and public IO-VNBD evaluator replay. SYSTEM exposes sensors, GNSS, localization, AI/OOD, field test, session, performance and map health. The About sheet accurately attributes the SIH26168 problem statement to ISRO / Department of Space without implying endorsement or certification.
+The model was trained on separated time blocks of one IO-VNBD S1 journey: 11,818 training and 3,489 validation windows. Source-domain validation speed MAE fell from 12.226 to 6.814 m/s, but zero-shot results on two Google Smartphone Decimeter phone models were mixed. Android uses a dependency-free Kotlin implementation of the frozen GRU with Python/Kotlin parity tests. The model hash is `fa2169781f9e499dd87fdd00038a3b4a1326181b31938cec237a7802ae0bb4ec`.
 
-## GNSS isolation and AI safety
+| Frozen IO-VNBD S1 blackout | Reference travel | Hybrid final error | Drift |
+|---|---:|---:|---:|
+| 10 s steady | 154.16 m | 34.92 m | 22.655% |
+| 30 s turning | 200.92 m | 37.31 m | 18.571% |
+| 60 s stop/go | 262.79 m | 74.19 m | 28.232% |
+| 120 s higher speed | 1706.39 m | 656.62 m | 38.480% |
 
-During simulated tunnel loss all runtime GNSS fields are null even if physical callbacks continue in an evaluator-only log. The engine rejects malformed hidden fixes independently. The map provider has no location API; only `IdrEngine` can drive the marker. Hard OOD becomes `AI SAFETY FALLBACK`, not an unsafe correction. Loss before alignment holds position as `CALIBRATION REQUIRED`.
+**Under-10% target: DOES NOT MEET.** The standard-window median is 25.44%. A separately preselected 75-second surprise window achieved 3.855%, but one good window is not evidence of general compliance. The 10-second raw inertial baseline beat Hybrid; the 120-second EKF beat Hybrid. These failures are retained in the [complete performance table](FINAL_PERFORMANCE_TABLE.md).
 
-## Performance and benchmark evidence
+## Map matching and generalization
 
-Host engine-only timing is 11,545 samples/s, 0.0866 ms average and 0.185 ms P95 versus a 10 Hz input. Frozen model SHA-256 is `fa2169781f9e499dd87fdd00038a3b4a1326181b31938cec237a7802ae0bb4ec`.
+A probabilistic road matcher was evaluated offline on the S1 map. It improved only two of six frozen windows relative to the best available Phase 5 prior and sometimes selected the wrong branch. It is **research-only**, not in the Android runtime. Rendering roads on a map is not map matching. Google Smartphone Decimeter 2022 supplied three evaluable moving windows on Pixel 4 XL and Pixel 5; Hybrid improved EKF once and degraded it twice. WHU, MoRPI, PPC and GREAT are not claimed as validated datasets with the local payloads available.
 
-The named public replay `S1_60_STOP_GO` is 60 seconds / 262.794 m. Raw DR final error is 327.185 m; Phase 5 Hybrid is 74.192 m / 28.232% drift. This is not cherry-picked as a universal claim: standard Hybrid drift was 22.655%, 18.571%, 28.232% and 38.480% for 10/30/60/120 seconds, and cross-device generalization was moderate.
+## Real phone and release state
 
-Release validation is 56/56 Kotlin/JVM tests and 228/228 Python tests with a successful offline APK build. The frozen estimator/model configuration is unchanged.
+The current app is NavGhost **2.4.0**. On 2026-10-05 it launched on a USB-connected Vivo V2513 running Android 16 and showed the honest indoor `WAITING FOR GNSS` state. An observed Google 3D restore crash from an opaque saved Play Services `Parcelable` was addressed by not handing saved vendor state back to the 3D view. The signed update installed over the existing app without clearing data, launched and relaunched twice with no crash in the Android crash buffer. This is a narrow lifecycle check, not proof that every Google 3D device/network path is fixed. Earlier physical evidence measured roughly 50 Hz native IMU, 9.6 Hz normalized stream, a 19.17-second first fix and runtime masking of a fresh physical fix. Those are historical acquisition/isolation observations, not this audit's new road-accuracy result. No new outdoor first fix, moving blackout/recovery accuracy, battery or thermal figure was measured today. The build now succeeds without a Google 3D key and retains the local ENU fallback; configured Google 3D also builds.
 
-## Physical-phone evidence
+Verification on this audit: **288/288 Python tests, 187/187 Kotlin tests, successful Android lint (222 warnings, 0 errors), keyless and configured debug builds, and a signed release build**, plus an exact independent reproduction of the 60-second replay metrics. Android instrumentation was not run on the user's existing data-bearing phone because a UI test writes a trip and changes a setting.
 
-Existing open-sky evidence verified approximately 50 Hz IMU, approximately 9.6 Hz runtime, visible/used satellites, a 19.17-second first fix, physical GPS callbacks and a real fix masked from runtime. The user also reported the Phase 11 app working correctly. No private GPS trace is committed and no new Phase 12 road-accuracy or endurance result is fabricated.
-
-## Field validation, privacy and offline behavior
-
-Automatic 10/30/60/120-second field tests run warm-up, readiness, baseline, blackout and recovery without driver interaction. Export is explicit and local. The validator keeps private sessions outside Git and treats same-phone GNSS only as an evaluation proxy. The official Google Maps SDK is an optional visual canvas configured only from ignored local properties. Google My Location is disabled; all displayed positions come from `IdrEngine`. Missing key/network/services falls back to local ENU, and map failure cannot pause IDR.
-
-## Known limitations
-
-No universal `<10%` drift, survey-grade accuracy, calibrated 95% uncertainty, worldwide road map, battery endurance or official deployment is claimed. Phone/mount/domain diversity and independent road reference remain physical validation work.
-
-## Judge demo
-
-Open DEMO, confirm `NOT LIVE`, run Quick Synthetic, show GNSS → tunnel → continuing IDR marker/uncertainty → bounded recovery, then switch to Public Benchmark for the labelled comparison. If GNSS/internet is unavailable indoors, remain in DEMO and never represent replay as live.
+For judging, demonstrate the live phone status and clearly labelled synthetic/public replay. Present the causal GNSS isolation, Kotlin GRU parity, uncertainty and honest failure table as strengths. Do not describe the current APK as independently proven to stay within 10% drift, maintain lane-level accuracy or perform on-device road matching. A safe mounted-vehicle study with an independent position reference, varied devices, a validated road matcher and an external-IMU interface remain decisive work.

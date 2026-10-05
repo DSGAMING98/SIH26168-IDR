@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">NavGhost</string>
+    <string name="splash_tagline">Navigation Beyond GNSS</string>
+    <string name="splash_description">NavGhost startup animation</string>
+    <string name="notification_channel_name">NavGhost navigation</string>
+    <string name="notification_channel_description">Shows when on-device navigation and local sensor recording are active.</string>
+</resources>

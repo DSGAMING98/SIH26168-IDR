@@ -1,0 +1,15 @@
+# Android build products and machine-local configuration
+**/.gradle/
+**/.kotlin/
+**/build/
+**/.idea/
+**/local.properties
+**/signing.properties
+
+# Python/editor caches and private local inputs
+**/__pycache__/
+**/.pytest_cache/
+**/.venv/
+*.pyc
+*.apk
+*.zip

@@ -1,0 +1,5 @@
+# Copy to android/signing.properties. The real file and keystore are intentionally ignored.
+storeFile=keystore/navghost-release.jks
+storePassword=replace-with-private-password
+keyAlias=navghost-release
+keyPassword=replace-with-private-password

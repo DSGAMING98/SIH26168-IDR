@@ -1,4 +1,6 @@
-# NavGhost final technical overview
+# NavGhost technical overview (current app 2.4.0; research phases retained)
+
+Audit update 2026-10-05: the architecture below describes the causal estimator, but the phase table is a historical development record. The latest app adds product navigation, renderer fallbacks and metro stop/resume safeguards. Frozen Phase 5 blackout accuracy remains above the SIH under-10% target in all four standard windows. See the current [requirements audit](../../SIH26168_FINAL_REQUIREMENTS_AUDIT.md) and [performance table](../results/FINAL_PERFORMANCE_TABLE.md).
 
 ## Purpose
 
@@ -16,7 +18,7 @@ Android sensor timestamps and GPS callbacks share the elapsed-realtime clock. A 
 
 The live estimator performs conditioning, gravity removal, vehicle-direction alignment, six-state EKF propagation, stationary/ZUPT handling, and an optional GRU speed-residual measurement. The 4,257-parameter GRU does not predict position. Soft OOD raises measurement variance; hard OOD rejects the correction and displays `AI SAFETY FALLBACK`.
 
-The `MapProvider` API returns only visual presentation metadata. It cannot return a marker or location. NavGhost can render the engine-owned marker and state-colored path over the official Google Maps SDK, but Google My Location is disabled and no Google location/fused provider exists in the app. A credential-free local ENU view is the guaranteed fallback. Phase 6 map matching remains research-only because it improved only two of six frozen cases; Google road tiles are not map matching and never alter engine state.
+The `MapProvider` API returns only visual presentation metadata. It cannot return a marker or location. NavGhost can render the engine-owned marker and state-colored path over Google 3D, MapLibre or a local ENU view. Google My Location is disabled and no Google location/fused provider exists in the estimator. A credential-free local ENU view is the guaranteed fallback. Phase 6 map matching remains research-only because it improved only two of six frozen cases against the best Phase 5 prior; road tiles are not map matching and never alter engine state. Google 3D requires a configured key for that renderer, but the Android build and core localization no longer require the key.
 
 ## State and safety behavior
 
@@ -43,7 +45,7 @@ The final marker always comes from `IdrEngine`: GNSS/EKF while trusted, EKF/IDR 
 | 5 | `39b50c1` | Six-state EKF plus frozen OOD-gated GRU residual. |
 | 6 | `da45078` | Experimental probabilistic road matching; mixed results retained. |
 | 7 | `93ddc6b` | Freshness verification and bounded reacquisition. |
-| 8 | `7dd4a1d` | Frozen zero-shot cross-device/location validation; moderate generalization. |
+| 8 | `7dd4a1d` | Frozen zero-shot cross-device/location validation; mixed generalization. |
 | 9/9.1 | `4077378`, `e039ec7` | Android logger, real sensor acquisition, first-fix and masking observability. |
 | 10 | `0fba068` | Standalone on-device Android estimator and Kotlin GRU parity. |
 | 11 | `a0eadec` | Stationary/alignment hardening, field test, validator, product UI. |
@@ -60,17 +62,17 @@ Phase 11 engine-only JVM throughput was 11,545 samples/s, 0.0866 ms average and 
 
 ## Physical Android evidence
 
-The existing Phase 9.1 phone run verified approximately 50 Hz native IMU, approximately 9.6 Hz normalized runtime, 60 visible/5 used satellites, first valid fix in 19.17 s, physical GPS callbacks, and a real fresh fix masked from runtime during simulated loss. It verifies acquisition and isolation plumbing, not road accuracy. Phase 11 was reported working on the physical phone, but no new private trace is committed.
+The existing Phase 9.1 phone run verified approximately 50 Hz native IMU, approximately 9.6 Hz normalized runtime, 60 visible/5 used satellites, first valid fix in 19.17 s, physical GPS callbacks, and a real fresh fix masked from runtime during simulated loss. It verifies acquisition and isolation plumbing, not road accuracy. Phase 11 was reported working on the physical phone, but no new private trace is committed. In the 2026-10-05 indoor audit, the signed 2.4.0 update installed on Vivo V2513 / Android 16 without clearing data and relaunched twice with no Android crash-buffer entry. A prior Google 3D vendor-state restore crash motivated a narrow change to recreate that view instead of restoring its opaque Parcelable; this does not establish complete renderer or field accuracy validation.
 
 ## Final application
 
-The Android app is **NavGhost — Navigation Beyond GNSS**, package `org.sih26168.idrlogger`, version 1.1.0. LIVE is a map-dominant real runtime with engine-owned marker/halo/path, follow/recenter, heading/north-up, optional satellite view, compact state telemetry, and safe controls. DEMO is always marked NOT LIVE and contains a 27-second deterministic synthetic story plus an evaluator-only public benchmark comparison. SYSTEM exposes sensor, GNSS, localization, AI/OOD, field test, session, performance and map health. Logs stay app-private until explicit ZIP export.
+The Android app is **NavGhost — Navigation Beyond GNSS**, package `org.sih26168.idrlogger`, version **2.4.0** (versionCode 41). The current product includes map and turn-by-turn views, renderer fallbacks, nearby/trips/insights, labelled demonstrations and system diagnostics. The live marker remains engine-owned. Local session logs stay app-private until explicit export. The complete tracked Android Studio source is published in the technical-evidence bundle; local API keys, signing files and private traces are excluded.
 
 ## Limitations
 
 - No universal `<10%` drift claim: long or strongly shifted conditions remain difficult.
 - Live uncertainty is covariance-derived engineering uncertainty, not a calibrated 95% confidence region.
-- Google road/satellite context requires a locally configured, restricted key and network; local ENU remains guaranteed.
+- Google 3D imagery requires a locally configured, restricted key and network; the build and local ENU fallback work without it.
 - The Maps SDK does not expose an authentication-failure callback, so the layer control provides an explicit LOCAL fallback if a configured key is rejected.
 - No new survey-grade, RTK, battery-endurance, or cross-phone road result was produced in release polish.
 - Vehicle alignment needs a short, safe straight movement; before alignment, blackout is intentionally held rather than fabricated.

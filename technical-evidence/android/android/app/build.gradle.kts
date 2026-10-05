@@ -9,7 +9,8 @@ val localProperties = Properties().apply {
     if (file.isFile) file.inputStream().use { load(it) }
 }
 val mapsApiKey = localProperties.getProperty("MAPS_API_KEY").orEmpty().trim()
-val maps3dApiKey = localProperties.getProperty("MAPS3D_API_KEY").orEmpty().trim()
+val maps3dApiKey = providers.gradleProperty("NAVGHOST_MAPS3D_API_KEY")
+    .orElse(localProperties.getProperty("MAPS3D_API_KEY").orEmpty()).get().trim()
 val placesApiKey = localProperties.getProperty("PLACES_API_KEY").orEmpty().trim()
 val signingProperties = Properties().apply {
     val file = rootProject.file("signing.properties")
@@ -17,9 +18,6 @@ val signingProperties = Properties().apply {
 }
 val releaseSigningConfigured = listOf("storeFile", "storePassword", "keyAlias", "keyPassword")
     .all { !signingProperties.getProperty(it).isNullOrBlank() }
-require(maps3dApiKey.isNotEmpty()) {
-    "MAPS3D_API_KEY is required in android/local.properties for the Google Maps 3D build."
-}
 // Explicit build-time trusted LAN host; generated resources and local properties are untracked.
 // No global cleartext exception and no personal network address committed to source.
 val telemetryLanHost = providers.gradleProperty("NAVGHOST_LAN_HOST").orElse("").get().trim()

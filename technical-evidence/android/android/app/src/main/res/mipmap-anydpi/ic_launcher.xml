@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/navghost_icon_background" />
+    <item android:width="86dp" android:height="86dp" android:gravity="center" android:drawable="@drawable/ic_navghost_mark" />
+</layer-list>

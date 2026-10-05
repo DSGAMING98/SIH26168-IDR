@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1450" height="820" viewBox="0 0 1450 820" role="img" aria-labelledby="title desc">
+  <title id="title">SIH26168 localization state machine</title>
+  <desc id="desc">Safety states from waiting through calibration, GNSS, IDR, verification and recovery.</desc>
+  <defs><marker id="a" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0 0L10 3L0 6Z" fill="#8ba0b2"/></marker><style>.bg{fill:#060d16}.n{fill:#0f1b28;stroke:#2a3c4d;stroke-width:2}.g{fill:#102a2a;stroke:#4ad8b5;stroke-width:3}.i{fill:#362712;stroke:#ffae48;stroke-width:3}.r{fill:#261f3f;stroke:#967eff;stroke-width:3}.x{fill:#3a1620;stroke:#ff5c69;stroke-width:3}.t{font:700 18px sans-serif;fill:#f2f6fa;text-anchor:middle}.h{font:700 26px sans-serif;fill:#f2f6fa}.s{font:500 14px sans-serif;fill:#b9c8d6;text-anchor:middle}.l{stroke:#8ba0b2;stroke-width:2.5;fill:none;marker-end:url(#a)}.d{stroke-dasharray:8 7}</style></defs>
+  <rect class="bg" width="1450" height="820" rx="32"/><text class="h" x="55" y="55">NAVGhost — LOCALIZATION STATE MACHINE</text>
+  <rect class="n" x="55" y="110" width="220" height="82" rx="16"/><text class="t" x="165" y="145">WAITING FOR GNSS</text><text class="s" x="165" y="171">no trusted fix</text>
+  <rect class="n" x="345" y="110" width="220" height="82" rx="16"/><text class="t" x="455" y="145">CALIBRATING</text><text class="s" x="455" y="171">learn vehicle direction</text>
+  <rect class="g" x="635" y="110" width="220" height="82" rx="16"/><text class="t" x="745" y="145">GNSS ACTIVE</text><text class="s" x="745" y="171">trusted fix + EKF</text>
+  <rect class="n" x="925" y="110" width="220" height="82" rx="16"/><text class="t" x="1035" y="145">GNSS DEGRADED</text><text class="s" x="1035" y="171">freshness grace</text>
+  <rect class="i" x="925" y="310" width="220" height="82" rx="16"/><text class="t" x="1035" y="345">IDR ACTIVE</text><text class="s" x="1035" y="371">runtime GNSS null</text>
+  <rect class="r" x="635" y="500" width="220" height="82" rx="16"/><text class="t" x="745" y="535">GNSS VERIFYING</text><text class="s" x="745" y="561">two distinct fresh fixes</text>
+  <rect class="r" x="345" y="500" width="220" height="82" rx="16"/><text class="t" x="455" y="535">GNSS RECOVERING</text><text class="s" x="455" y="561">bounded reconciliation</text>
+  <rect class="i" x="55" y="310" width="260" height="82" rx="16"/><text class="t" x="185" y="345">CALIBRATION REQUIRED</text><text class="s" x="185" y="371">hold position • grow sigma</text>
+  <rect class="x" x="1165" y="500" width="220" height="82" rx="16"/><text class="t" x="1275" y="535">ERROR</text><text class="s" x="1275" y="561">contained failure</text>
+  <path class="l" d="M275 151H335"/><text class="s" x="305" y="137">first fix</text>
+  <path class="l" d="M565 151H625"/><text class="s" x="595" y="137">aligned</text>
+  <path class="l" d="M855 151H915"/><text class="s" x="885" y="137">stale</text>
+  <path class="l" d="M1035 192V300"/><text class="s" x="1090" y="252">loss confirmed</text>
+  <path class="l" d="M925 351H325"/><text class="s" x="625" y="337">loss before alignment</text>
+  <path class="l" d="M1035 392V462H745V490"/><text class="s" x="889" y="447">fresh fix returns</text>
+  <path class="l" d="M635 541H575"/><text class="s" x="605" y="527">verified</text>
+  <path class="l" d="M455 500V230H745V202"/><text class="s" x="556" y="248">converged</text>
+  <path class="l d" d="M635 570H585V650H1035V402"/><text class="s" x="810" y="674">renewed loss → IDR</text>
+  <path class="l d" d="M345 541H185V402"/><text class="s" x="245" y="527">lost alignment</text>
+  <path class="l d" d="M1145 351H1275V490"/><text class="s" x="1230" y="339">fatal invariant</text>
+  <text class="s" x="720" y="760">Every visible state has text; color is secondary. No state uses a route, hidden reference, or map-provided location.</text>
+</svg>
