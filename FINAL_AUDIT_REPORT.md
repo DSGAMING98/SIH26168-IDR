@@ -59,7 +59,7 @@ Python **288/288**, Kotlin **187/187**; Android lint passed with **222 warnings,
 
 ## 12. Final Repository State
 
-Engineering branch `codex/navghost-product-expansion`, focused code commit `74f57f3`. The judge-facing `main` checkout contains the current README, requirements matrix, full tracked Android source, reports, selected plots and data summaries. Existing unrelated dirty engineering files were deliberately excluded from the focused commit. See the Git history for the eventual publication commit; no history rewrite or force push is used. The live website points to the same-version signed APK.
+Engineering branch `codex/navghost-product-expansion`, focused code commit `74f57f3`. The judge-facing `main` checkout contains the current README, requirements matrix, full tracked Android source, reports, selected plots and data summaries. Existing unrelated dirty engineering files were deliberately excluded from the focused commit. The publication commit is recorded in Git history; no history rewrite or force push was used. The live website points to the same-version signed APK.
 
 ## 13. Remaining Limitations
 
