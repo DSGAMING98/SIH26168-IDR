@@ -1,6 +1,6 @@
 # SIH26168 judge evidence
 
-2026-10-05: working research prototype; **MORE ENGINEERING REQUIRED**.
+2026-10-06: working research prototype; **MORE ENGINEERING REQUIRED**.
 App, signed build and website remain version 2.4.0 (41). Device checks are recorded separately from moving accuracy.
 
 | SIH Requirement | NavGhost Implementation | Result | Evidence |
@@ -28,6 +28,12 @@ magnetometer, linear acceleration and rotation-vector sensors were exposed. Thre
 launches completed in 253–312 ms and Android's crash buffer remained empty. Tunnel-test
 activation was correctly rejected before live prerequisites. This is stationary deployment
 evidence, not moving localization accuracy. See the [device report](technical-evidence/finalist_20261005/ANDROID_DEVICE_VERIFICATION.md).
+
+The 2026-10-06 repeat gate installed the same signed APK in place, retained the original
+install time, and read back an installed APK hash identical to the release. Focused metro
+stop/resume, speed-bound, timing and recovery replay passed 25/25 tests before the full
+194-test Android suite. The September 25 field observation predates those safeguards;
+a new moving metro/vehicle run is still required to validate their physical behavior.
 
 ## WHAT REMAINS RESEARCH / PENDING
 
