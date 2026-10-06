@@ -1,0 +1,35 @@
+{
+  "runtime_policy": "causal inputs only; reference attached after trajectory completion",
+  "benchmark_policy": "unchanged frozen half-open windows and drift metric",
+  "model_sha256": {
+    "released_gru": "fa2169781f9e499dd87fdd00038a3b4a1326181b31938cec237a7802ae0bb4ec",
+    "direct_speed_research": "30879b0b11933901001226ca5fd2c4c20719b9452ffc73833de2ab989fcc4e81",
+    "direct_imu_research": "e548cac929ae78c0a6449f8bb6d0cecd772166ae0fcaf140bb1a096d4055a2c1"
+  },
+  "summary": {
+    "deployed_baseline": {
+      "standard_windows_under_10_pct": 0,
+      "standard_window_count": 4,
+      "worst_standard_drift_pct": 38.48029134946065,
+      "mean_standard_drift_pct": 26.98455112069385
+    },
+    "course_anchor_frozen_gru": {
+      "standard_windows_under_10_pct": 1,
+      "standard_window_count": 4,
+      "worst_standard_drift_pct": 32.931722613054916,
+      "mean_standard_drift_pct": 20.611711164579656
+    },
+    "direct_speed_gru": {
+      "standard_windows_under_10_pct": 2,
+      "standard_window_count": 4,
+      "worst_standard_drift_pct": 30.967372066031047,
+      "mean_standard_drift_pct": 16.452721838400382
+    },
+    "direct_imu_gru": {
+      "standard_windows_under_10_pct": 2,
+      "standard_window_count": 4,
+      "worst_standard_drift_pct": 30.904628881142326,
+      "mean_standard_drift_pct": 16.836564021304774
+    }
+  }
+}
