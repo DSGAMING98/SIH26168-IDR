@@ -1,5 +1,7 @@
 # SIH26168 final requirements audit
 
+> **Current status (2026-10-08):** the protected causal candidate passes 3/4 locked windows: 8.503%, 2.834%, 3.765%, and 11.692% at 10/30/60/120 seconds. Therefore full under-10% compliance is still **not achieved**. Tests now stand at 300 Python and 200 Kotlin, with parity, lint and signed builds passing. See the [current focused report](technical-evidence/accuracy-attack-20261007/NAVGHOST_120_SECOND_FINAL_ATTACK_REPORT.md). The audit body below is retained as historical evidence.
+
 **HISTORICAL / SUPERSEDED:** the earlier 2.4.0 matrix is retained below.
 See [current requirement evidence](SIH26168_JUDGE_EVIDENCE.md) for the tested
 external-input adapter, current host test totals, and current 2.4.0 release status.

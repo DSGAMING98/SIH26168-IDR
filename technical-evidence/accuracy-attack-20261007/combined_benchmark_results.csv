@@ -1,0 +1,5 @@
+scenario,start_s,duration_s,drift_pct,final_error_m,speed_mae_mps,under_10_pct,early_state_active,stationary_seen,prediction_count,early_suppression_count,long_floor_count,reconstructed_speed_floor_mps,reconstruction,initialization_fraction,initialized_speed_mps
+S1_10_STEADY,320.0,10.0,8.503408002678189,13.108517139430942,0.6429592692185423,True,True,False,10,10,0,,,0.0,15.34
+S1_30_TURNING,4555.0,30.0,2.834094423704094,5.694399163337049,4.138441798019054,True,False,False,50,0,0,,,0.0,13.71
+S1_60_STOP_GO,4215.0,60.0,3.7647764092940053,9.893604415352675,1.6340749318663428,True,False,True,110,0,0,18.147472527472218,"{'speed_mps': 18.147472527472218, 'last_fix_age_s': 8.0, 'speed_jump_mps': 8.79, 'course_jump_deg': 86.47000000000003, 'speed_trend_mps2': 0.9659340659340272}",0.0,10.42
+S1_120_HIGHER_SPEED,3495.0,120.0,11.691985923540722,199.51033339230332,2.2794974931661782,False,False,False,230,0,150,14.973333333333333,"{'speed_mps': 14.973333333333333, 'last_fix_age_s': 4.0, 'speed_jump_mps': 9.12, 'course_jump_deg': 94.76999999999998, 'speed_trend_mps2': 1.0133333333333332}",0.0,10.92

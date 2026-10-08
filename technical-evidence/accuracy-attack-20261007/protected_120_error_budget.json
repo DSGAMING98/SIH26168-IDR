@@ -1,0 +1,14 @@
+{
+  "source": "results/accuracy_attack_20261007/focused_accuracy/benchmark_timeseries/S1_120_HIGHER_SPEED.csv",
+  "offline_reference_used_by_runtime": false,
+  "final_relative_position_error_m": 253.51705332708772,
+  "final_cumulative_speed_distance_error_m": -252.57238564286422,
+  "final_along_track_position_error_m": -249.21048509919956,
+  "final_lateral_position_error_m": 46.52988764515885,
+  "mean_signed_speed_error_mps": -2.10479110903682,
+  "mean_abs_heading_error_deg": 7.938640794489429,
+  "dominant_segment": "0-20 s",
+  "dominant_segment_distance_error_m": -98.78955225605085,
+  "dominant_cause": "accumulated along-track speed deficit",
+  "road_heading_available": false
+}

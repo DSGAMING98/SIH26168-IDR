@@ -1,5 +1,7 @@
 # SIH26168 judge evidence
 
+> **Current status (2026-10-08):** the protected causal candidate achieves 8.503%, 2.834%, 3.765%, and 11.692% drift at 10/30/60/120 seconds: **3/4 below 10%**. It passes 300 Python and 200 Kotlin tests plus parity, lint and signed build checks. The 120-second target, lane-level accuracy and moving tunnel validation remain incomplete. See the [current focused report](technical-evidence/accuracy-attack-20261007/NAVGHOST_120_SECOND_FINAL_ATTACK_REPORT.md). The older tables below are historical/superseded.
+
 2026-10-06: working research prototype; **MORE ENGINEERING REQUIRED**.
 App, signed build and website remain version 2.4.0 (41). Device checks are recorded separately from moving accuracy.
 

@@ -1,0 +1,39 @@
+{
+  "status": "frozen_after_validation_before_benchmark_rerun",
+  "selection_source": "locked Phase 5 validation blocks only",
+  "selection_rule": "variance scale frozen first; then minimum mean trigger-window drift, minimum worst drift, shortest transition",
+  "variance_policy_sha256": "56eef44fdcc80fcaa076a97d95de6efa1c68f143e1a2d05fa4221ec2c76a4158",
+  "validation_cases": [
+    {
+      "id": "VALIDATION_TRIGGER_1060",
+      "start_s": 1060.0,
+      "duration_s": 120.0
+    },
+    {
+      "id": "VALIDATION_TRIGGER_1160",
+      "start_s": 1160.0,
+      "duration_s": 120.0
+    }
+  ],
+  "candidate_transitions_s": [
+    20.0,
+    30.0,
+    45.0,
+    60.0
+  ],
+  "settings": {
+    "nominal_sample_rate_hz": 10.0,
+    "early_acceleration_delta_limit_mps": 1.5,
+    "early_yaw_delta_limit_deg": 15.0,
+    "early_disagreement_limit_mps": 3.0,
+    "long_outage_transition_s": 45.0,
+    "stationary_window_fraction": 0.2,
+    "reconstruction_speed_jump_mps": 5.0,
+    "reconstruction_course_jump_deg": 45.0,
+    "reconstruction_max_fix_age_s": 10.0,
+    "reconstruction_max_acceleration_mps2": 1.5,
+    "direct_model_weight": 1.0,
+    "measurement_variance_scale": 0.5
+  },
+  "model_sha256": "e548cac929ae78c0a6449f8bb6d0cecd772166ae0fcaf140bb1a096d4055a2c1"
+}
