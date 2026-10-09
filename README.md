@@ -3,13 +3,13 @@
 Working SIH26168 research prototype with validated causal GNSS-denied navigation.
 Performance targets and validation gaps are listed below. Team NET-PSYCHO.
 
-## Current focused engineering status — 2026-10-08
+## Current focused engineering status — 2026-10-09
 
 **Latest measured result: 3/4 locked blackout windows below 10% drift.** The protected causal estimator records **8.503%, 2.834%, 3.765%, and 11.692%** at 10, 30, 60, and 120 seconds. The 120-second target is not met. A road-assisted candidate reached 9.952% at 120 seconds but regressed the 30-second turning window to 19.782%, so it was rejected and never deployed.
 
-[Final focused report](technical-evidence/accuracy-attack-20261007/NAVGHOST_120_SECOND_FINAL_ATTACK_REPORT.md) · [Protected results](technical-evidence/accuracy-attack-20261007/combined_benchmark_results.csv) · [Segment error budget](technical-evidence/accuracy-attack-20261007/protected_120_segment_error_budget.csv) · [Focused research APK](technical-evidence/accuracy-attack-20261007/NavGhost-2.4.0-Focused-Research-Candidate.apk)
+[Final focused report](technical-evidence/accuracy-attack-20261007/NAVGHOST_120_SECOND_FINAL_ATTACK_REPORT.md) · [Protected results](technical-evidence/accuracy-attack-20261007/combined_benchmark_results.csv) · [Latest release-readiness audit](ISRO_RELEASE_READINESS.md) · [Focused research APK](technical-evidence/accuracy-attack-20261007/NavGhost-2.4.0-Focused-Research-Candidate.apk)
 
-The current test gate is **300 Python tests, 200 Kotlin tests, Python/Kotlin parity, Android lint, debug and signed release builds passed**. The signed APK installed in place on vivo V2513 / Android 16 without clearing data. This stationary USB validation does not prove moving tunnel accuracy. Runtime road matching remains undeployed, cross-device transfer is mixed, and lane-level positioning remains unavailable.
+The latest engineering gate is **311 Python tests and 204 Kotlin tests**, with Android lint and the debug build passing. The published APK remains the previously protected 2.4.0 artifact; unvalidated research candidates and later host-only reliability fixes are not presented as a new production release. This stationary USB validation does not prove moving tunnel accuracy. Runtime road matching remains undeployed, cross-device transfer is mixed, and lane-level positioning remains unavailable.
 
 > Earlier accuracy tables below are retained as historical development evidence and are superseded by the October 8 focused report above.
 
