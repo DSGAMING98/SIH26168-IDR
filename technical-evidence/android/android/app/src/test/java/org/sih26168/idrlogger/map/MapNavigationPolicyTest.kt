@@ -9,6 +9,28 @@ import org.sih26168.idrlogger.engine.NavigationState
 import org.sih26168.idrlogger.engine.TrajectoryPoint
 
 class MapNavigationPolicyTest {
+    @Test
+    fun multiKilometreIdrUncertaintyHidesPreciseGeodeticArrow() {
+        val snapshot = NavigationSnapshot(
+            state = NavigationState(
+                latitudeDeg = 12.9716,
+                longitudeDeg = 77.5946,
+                horizontalUncertaintyM = 2_000.0,
+                localizationMode = LocalizationMode.IDR_ACTIVE,
+            ),
+        )
+        val marker = EngineMarkerPolicy.from(snapshot)
+        assertNull(marker.latitudeDeg)
+        assertNull(marker.longitudeDeg)
+        val recovered = EngineMarkerPolicy.from(
+            snapshot.copy(state = snapshot.state.copy(
+                horizontalUncertaintyM = 7.0,
+                localizationMode = LocalizationMode.GNSS_RECOVERING,
+            )),
+        )
+        assertEquals(12.9716, recovered.latitudeDeg!!, 0.0)
+        assertEquals(77.5946, recovered.longitudeDeg!!, 0.0)
+    }
     private fun snapshot(mode: LocalizationMode = LocalizationMode.GNSS_ACTIVE, heading: Double = 90.0) = NavigationSnapshot(
         state = NavigationState(latitudeDeg = 12.97, longitudeDeg = 77.59, eastM = 12.0, northM = -8.0,
             speedMps = 12.0, headingDeg = heading, localizationMode = mode, motionState = MotionState.MOVING,

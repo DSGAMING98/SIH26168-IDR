@@ -9,6 +9,42 @@ import org.sih26168.idrlogger.model.GnssStatus
 
 class IdrEngineTest {
     @Test
+    fun invalidOrLowQualityGnssSpeedCannotPoisonInitialization() {
+        val invalidEngine = IdrEngine()
+        val invalidSample = EngineTestFixtures.sample(0, 1_000_000_000L, gnssEastM = 0.0).let {
+            it.copy(gnss = it.gnss!!.copy(speedMps = Double.NaN))
+        }
+        val invalidState = invalidEngine.process(invalidSample)
+        assertTrue(invalidState.speedMps.isFinite())
+        assertTrue(invalidState.speedMps < 0.1)
+
+        val inaccurateEngine = IdrEngine()
+        val inaccurateSample = EngineTestFixtures.sample(0, 1_000_000_000L, gnssEastM = 0.0, gnssSpeedMps = 30.0).let {
+            it.copy(gnss = it.gnss!!.copy(speedAccuracyMps = 12.0))
+        }
+        val inaccurateState = inaccurateEngine.process(inaccurateSample)
+        assertTrue(inaccurateState.speedMps < 0.1)
+    }
+
+    @Test
+    fun trustedMovingGnssVetoesContradictoryInertialStop() {
+        val engine = IdrEngine()
+        var sequence = 0L
+        var timeNs = 1_000_000_000L
+        repeat(10) {
+            engine.process(EngineTestFixtures.sample(sequence++, timeNs, gnssEastM = sequence * 0.8, forwardAccelerationMps2 = -0.8))
+            timeNs += 100_000_000L
+        }
+        var state = NavigationState()
+        repeat(40) {
+            state = engine.process(EngineTestFixtures.sample(sequence++, timeNs, gnssEastM = sequence * 0.8, gnssSpeedMps = 8.0))
+            timeNs += 100_000_000L
+        }
+        assertTrue("trusted 8 m/s GNSS must prevent a false stop: ${state.speedMps}", state.speedMps > 3.0)
+        assertTrue(state.eastM > 15.0)
+    }
+
+    @Test
     fun poorAccuracyFixCannotBecomeNavigationAnchor() {
         val engine = IdrEngine()
         val state = engine.process(
@@ -164,12 +200,14 @@ class IdrEngineTest {
         state = engine.process(EngineTestFixtures.sample(36, 4_600_000_000L, gnssEastM = 24.0, gnssSpeedMps = 0.0))
         assertEquals(LocalizationMode.GNSS_VERIFYING, state.localizationMode)
         state = engine.process(EngineTestFixtures.sample(37, 4_700_000_000L, gnssEastM = 24.0, gnssSpeedMps = 0.0))
+        assertEquals(LocalizationMode.GNSS_VERIFYING, state.localizationMode)
+        state = engine.process(EngineTestFixtures.sample(38, 4_800_000_000L, gnssEastM = 24.0, gnssSpeedMps = 0.0))
         assertEquals(LocalizationMode.GNSS_RECOVERING, state.localizationMode)
         val initialInnovation = state.gnssInnovationM!!
         assertTrue(initialInnovation.isFinite())
         assertTrue(state.lastCorrectionM <= 0.5 + 1e-9)
         var maximumCorrection = state.lastCorrectionM
-        for (index in 38 until 110) {
+        for (index in 39 until 111) {
             state = engine.process(
                 EngineTestFixtures.sample(
                     sequence = index.toLong(),
@@ -231,7 +269,62 @@ class IdrEngineTest {
                 gnssSolutionTimestampNs = 4_800_000_000L,
             )
         )
+        assertEquals(LocalizationMode.GNSS_VERIFYING, state.localizationMode)
+        state = engine.process(
+            EngineTestFixtures.sample(
+                sequence = 39,
+                timeNs = 4_900_000_000L,
+                gnssEastM = 25.1,
+                gnssSolutionTimestampNs = 4_900_000_000L,
+            )
+        )
         assertEquals(LocalizationMode.GNSS_RECOVERING, state.localizationMode)
+    }
+
+    @Test
+    fun inconsistentReturnedFixCannotBorrowVerificationTrust() {
+        val engine = IdrEngine()
+        EngineTestFixtures.calibrateMoving(engine)
+        for (index in 6 until 80) {
+            engine.process(EngineTestFixtures.sample(index.toLong(), 1_000_000_000L + index * 100_000_000L, blackout = true))
+        }
+        var state = engine.process(EngineTestFixtures.sample(80, 9_000_000_000L, gnssEastM = 40.0))
+        assertEquals(LocalizationMode.GNSS_VERIFYING, state.localizationMode)
+        state = engine.process(EngineTestFixtures.sample(81, 9_100_000_000L, gnssEastM = 41.0))
+        assertEquals(LocalizationMode.GNSS_VERIFYING, state.localizationMode)
+        state = engine.process(EngineTestFixtures.sample(82, 9_200_000_000L, gnssEastM = 900.0))
+        assertEquals(LocalizationMode.GNSS_VERIFYING, state.localizationMode)
+        state = engine.process(EngineTestFixtures.sample(83, 9_300_000_000L, gnssEastM = 901.0))
+        assertEquals(LocalizationMode.GNSS_VERIFYING, state.localizationMode)
+        state = engine.process(EngineTestFixtures.sample(84, 9_400_000_000L, gnssEastM = 902.0))
+        assertEquals(LocalizationMode.GNSS_RECOVERING, state.localizationMode)
+    }
+
+    @Test
+    fun longHighUncertaintyDenialReanchorsOnlyAfterThreeConsistentFixes() {
+        val engine = IdrEngine()
+        EngineTestFixtures.calibrateMoving(engine)
+        var state = NavigationState()
+        for (index in 6 until 1_206) {
+            state = engine.process(
+                EngineTestFixtures.sample(
+                    index.toLong(),
+                    1_000_000_000L + index * 100_000_000L,
+                    blackout = true,
+                    forwardAccelerationMps2 = 1.2,
+                )
+            )
+        }
+        assertTrue(state.horizontalUncertaintyM!! > 50.0)
+        val before = state.eastM
+        state = engine.process(EngineTestFixtures.sample(1_206, 121_600_000_000L, gnssEastM = 100.0, gnssSpeedMps = 0.0))
+        assertEquals(LocalizationMode.GNSS_VERIFYING, state.localizationMode)
+        state = engine.process(EngineTestFixtures.sample(1_207, 121_700_000_000L, gnssEastM = 101.0, gnssSpeedMps = 0.0))
+        assertEquals(LocalizationMode.GNSS_VERIFYING, state.localizationMode)
+        state = engine.process(EngineTestFixtures.sample(1_208, 121_800_000_000L, gnssEastM = 100.5, gnssSpeedMps = 0.0))
+        assertEquals(LocalizationMode.GNSS_RECOVERING, state.localizationMode)
+        assertTrue("large drift must be replaced by verified physical fixes: before=$before after=${state.eastM}", kotlin.math.abs(state.eastM - 100.5) < 15.0)
+        assertTrue(state.lastCorrectionM > 100.0)
     }
 
     @Test
@@ -268,7 +361,7 @@ class IdrEngineTest {
             )
         }
         assertEquals(LocalizationMode.IDR_ACTIVE, state.localizationMode)
-        assertTrue("uncorrected speed must remain inside the safety envelope: ${state.speedMps}", state.speedMps <= 25.0 + 1e-9)
+        assertTrue("uncorrected speed must remain inside the safety envelope: ${state.speedMps}", state.speedMps <= 15.0 + 1e-9)
     }
 
     @Test

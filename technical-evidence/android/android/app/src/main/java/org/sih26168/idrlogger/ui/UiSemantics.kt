@@ -1,8 +1,19 @@
 package org.sih26168.idrlogger.ui
 
 import org.sih26168.idrlogger.engine.MlRuntimeState
+import org.sih26168.idrlogger.engine.IdrEngine
+import org.sih26168.idrlogger.engine.LocalizationMode
+import org.sih26168.idrlogger.engine.NavigationState
 
 object UiSemantics {
+    fun positionHighlyUncertain(state: NavigationState): Boolean =
+        state.localizationMode in UNCERTAIN_POSITION_MODES &&
+            (state.horizontalUncertaintyM ?: Double.POSITIVE_INFINITY) >= IdrEngine.HIGH_UNCERTAINTY_SIGMA_M
+
+    fun positionUnavailable(state: NavigationState): Boolean =
+        state.localizationMode in UNCERTAIN_POSITION_MODES &&
+            (state.horizontalUncertaintyM ?: Double.POSITIVE_INFINITY) >= IdrEngine.POSITION_UNAVAILABLE_SIGMA_M
+
     fun aiLabel(state: MlRuntimeState): String = when (state) {
         MlRuntimeState.ML_ACCEPTED -> "ML ASSIST ACTIVE"
         MlRuntimeState.ML_OOD_LIMITED -> "ML ASSIST GATED"
@@ -22,4 +33,11 @@ object UiSemantics {
         org.sih26168.idrlogger.engine.LocalizationMode.GNSS_RECOVERING -> "RECONCILING"
         org.sih26168.idrlogger.engine.LocalizationMode.ERROR -> "ERROR"
     }
+
+    private val UNCERTAIN_POSITION_MODES = setOf(
+        LocalizationMode.GNSS_DEGRADED,
+        LocalizationMode.IDR_ACTIVE,
+        LocalizationMode.GNSS_VERIFYING,
+        LocalizationMode.GNSS_RECOVERING,
+    )
 }

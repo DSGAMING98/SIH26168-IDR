@@ -1,6 +1,8 @@
 package org.sih26168.idrlogger.map
 
 import org.sih26168.idrlogger.engine.NavigationSnapshot
+import org.sih26168.idrlogger.engine.IdrEngine
+import org.sih26168.idrlogger.engine.LocalizationMode
 
 /**
  * Visual-context boundary. Providers can describe a background but cannot return location.
@@ -32,8 +34,23 @@ data class EngineMarker(
 /** There is intentionally no MapProvider argument: a visual provider cannot inject position. */
 object EngineMarkerPolicy {
     fun from(snapshot: NavigationSnapshot): EngineMarker = snapshot.state.let {
-        EngineMarker(it.eastM, it.northM, it.latitudeDeg, it.longitudeDeg, it.headingDeg)
+        val estimateUnavailable = it.localizationMode in UNCERTAIN_POSITION_MODES &&
+            (it.horizontalUncertaintyM ?: Double.POSITIVE_INFINITY) >= IdrEngine.POSITION_UNAVAILABLE_SIGMA_M
+        EngineMarker(
+            it.eastM,
+            it.northM,
+            if (estimateUnavailable) null else it.latitudeDeg,
+            if (estimateUnavailable) null else it.longitudeDeg,
+            it.headingDeg,
+        )
     }
+
+    private val UNCERTAIN_POSITION_MODES = setOf(
+        LocalizationMode.GNSS_DEGRADED,
+        LocalizationMode.IDR_ACTIVE,
+        LocalizationMode.GNSS_VERIFYING,
+        LocalizationMode.GNSS_RECOVERING,
+    )
 }
 
 /** Guaranteed, credential-free fallback used by every build. */

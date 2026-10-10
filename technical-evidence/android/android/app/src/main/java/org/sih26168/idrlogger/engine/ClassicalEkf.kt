@@ -78,6 +78,34 @@ class ClassicalEkf {
         scalarUpdate(NORTH, northM - x[NORTH], variance)
     }
 
+    /**
+     * Re-establishes the position origin after a long denial only after the caller has verified a
+     * sequence of mutually consistent physical GNSS callbacks.  A normal Kalman update cannot
+     * recover promptly once the propagated state is kilometres away and heavily correlated with
+     * yaw/speed.  Clearing position cross-covariance prevents that old, unobservable trajectory
+     * from pulling the verified fix away or changing speed/yaw as a side effect.
+     */
+    fun reanchorPosition(eastM: Double, northM: Double, accuracyM: Double) {
+        require(initialized)
+        require(eastM.isFinite() && northM.isFinite() && accuracyM.isFinite() && accuracyM >= 0.0)
+        x[EAST] = eastM
+        x[NORTH] = northM
+        for (index in 0 until STATE_SIZE) {
+            if (index != EAST && index != NORTH) {
+                covariance[EAST][index] = 0.0
+                covariance[index][EAST] = 0.0
+                covariance[NORTH][index] = 0.0
+                covariance[index][NORTH] = 0.0
+            }
+        }
+        val variance = accuracyM.coerceAtLeast(3.0).let { it * it }
+        covariance[EAST][EAST] = variance
+        covariance[NORTH][NORTH] = variance
+        covariance[EAST][NORTH] = 0.0
+        covariance[NORTH][EAST] = 0.0
+        stabilize()
+    }
+
     fun updateSpeed(speedMps: Double, standardDeviationMps: Double = 1.5) {
         if (speedMps.isFinite() && speedMps >= 0.0) {
             scalarUpdate(SPEED, speedMps - x[SPEED], standardDeviationMps * standardDeviationMps)

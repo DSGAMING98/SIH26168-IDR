@@ -4,6 +4,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.sih26168.idrlogger.engine.MlRuntimeState
 import org.sih26168.idrlogger.engine.LocalizationMode
+import org.sih26168.idrlogger.engine.NavigationState
 
 class UiSemanticsTest {
     @Test fun mapsInternalMlStatesToHonestHumanLabels() {
@@ -20,5 +21,21 @@ class UiSemanticsTest {
         }
         assertEquals("IDR ACTIVE", UiSemantics.localizationLabel(LocalizationMode.IDR_ACTIVE))
         assertEquals("CALIBRATION REQUIRED", UiSemantics.localizationLabel(LocalizationMode.CALIBRATION_REQUIRED))
+    }
+
+    @Test fun highUncertaintyNeverPresentsUnsupportedPrecisionAsReliable() {
+        val bounded = NavigationState(
+            localizationMode = LocalizationMode.IDR_ACTIVE,
+            horizontalUncertaintyM = 99.0,
+        )
+        val high = bounded.copy(horizontalUncertaintyM = 100.0)
+        val unavailable = bounded.copy(horizontalUncertaintyM = 500.0)
+        assertEquals(false, UiSemantics.positionHighlyUncertain(bounded))
+        assertEquals(true, UiSemantics.positionHighlyUncertain(high))
+        assertEquals(false, UiSemantics.positionUnavailable(high))
+        assertEquals(true, UiSemantics.positionUnavailable(unavailable))
+        assertEquals(false, UiSemantics.positionHighlyUncertain(
+            unavailable.copy(localizationMode = LocalizationMode.GNSS_ACTIVE),
+        ))
     }
 }

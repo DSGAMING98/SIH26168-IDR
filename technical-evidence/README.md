@@ -2,6 +2,15 @@
   <img src="NavGhost-README-Hero.png" alt="NavGhost — Navigation Beyond GNSS" width="100%" />
 </p>
 
+## October 10 metro failure repair
+
+The supplied underground export reproduced the false high-speed plateau, multi-kilometre
+drift and delayed GNSS recovery as one connected failure chain. The repair and its limits
+are documented in the [field-failure report](field-failure-20261010/FIELD_FAILURE_REPAIR_REPORT.md),
+with [physical-device smoke evidence](field-failure-20261010/DEVICE_VALIDATION_REPORT.md).
+The signed candidate is available for controlled testing, but it is not represented as a
+completed metro validation or as a 4/4 accuracy result.
+
 <p align="center">
   <a href="https://navghost-idr.vercel.app/"><strong>Website</strong></a>
   &nbsp;•&nbsp;

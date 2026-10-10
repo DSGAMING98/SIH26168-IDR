@@ -3,13 +3,13 @@
 Working SIH26168 research prototype with validated causal GNSS-denied navigation.
 Performance targets and validation gaps are listed below. Team NET-PSYCHO.
 
-## Current focused engineering status — 2026-10-09
+## Current focused engineering status — 2026-10-10
 
 **Latest measured result: 3/4 locked blackout windows below 10% drift.** The protected causal estimator records **8.503%, 2.834%, 3.765%, and 11.692%** at 10, 30, 60, and 120 seconds. The 120-second target is not met. A road-assisted candidate reached 9.952% at 120 seconds but regressed the 30-second turning window to 19.782%, so it was rejected and never deployed.
 
-[Final focused report](technical-evidence/accuracy-attack-20261007/NAVGHOST_120_SECOND_FINAL_ATTACK_REPORT.md) · [Protected results](technical-evidence/accuracy-attack-20261007/combined_benchmark_results.csv) · [Latest release-readiness audit](ISRO_RELEASE_READINESS.md) · [Focused research APK](technical-evidence/accuracy-attack-20261007/NavGhost-2.4.0-Focused-Research-Candidate.apk)
+[Metro failure repair report](technical-evidence/field-failure-20261010/FIELD_FAILURE_REPAIR_REPORT.md) · [Physical-device smoke test](technical-evidence/field-failure-20261010/DEVICE_VALIDATION_REPORT.md) · [Final focused report](technical-evidence/accuracy-attack-20261007/NAVGHOST_120_SECOND_FINAL_ATTACK_REPORT.md) · [Protected results](technical-evidence/accuracy-attack-20261007/combined_benchmark_results.csv) · [Latest release-readiness audit](ISRO_RELEASE_READINESS.md) · [Field-recovery candidate APK](technical-evidence/field-failure-20261010/NavGhost-2.4.0-field-recovery-candidate-release.apk)
 
-The latest engineering gate is **311 Python tests and 204 Kotlin tests**, with Android lint and the debug build passing. The published APK remains the previously protected 2.4.0 artifact; unvalidated research candidates and later host-only reliability fixes are not presented as a new production release. This stationary USB validation does not prove moving tunnel accuracy. Runtime road matching remains undeployed, cross-device transfer is mixed, and lane-level positioning remains unavailable.
+The latest engineering gate is **311 Python tests and 207 Kotlin tests**, with Android lint, debug assembly and signed release assembly passing. The October 10 repair removes the reproduced 120.97 km/h ceiling failure from the supplied export, requires three consistent fixes before recovery, re-anchors only verified large-drift recovery, and suppresses unsupported precision when uncertainty becomes excessive. The signed candidate passed an in-place physical-phone smoke test across MapLibre 3D, Google Legacy and Google 3D/Hybrid. The public website download remains the previously protected 2.4.0 APK until a new controlled metro journey validates stop/dwell/restart and physical reacquisition. This stationary USB validation does not prove moving tunnel accuracy. Runtime road matching remains undeployed, cross-device transfer is mixed, and lane-level positioning remains unavailable.
 
 > Earlier accuracy tables below are retained as historical development evidence and are superseded by the October 8 focused report above.
 

@@ -1,6 +1,7 @@
 package org.sih26168.idrlogger.engine
 
 import java.util.ArrayDeque
+import kotlin.math.abs
 import kotlin.math.hypot
 import kotlin.math.max
 import org.sih26168.idrlogger.model.GnssStatus
@@ -9,21 +10,35 @@ import org.sih26168.idrlogger.model.RuntimeGnssFix
 
 data class IdrEngineConfig(
     val maximumDtS: Double = 0.5,
-    val recoveryVerificationFixes: Int = 2,
+    val recoveryVerificationFixes: Int = 3,
     val recoveryCorrectionRateMps: Double = 5.0,
     val recoveryMinimumSamples: Int = 15,
     val recoveryCompletionDistanceM: Double = 5.0,
     val recoveryFreshTimeoutS: Double = 3.0,
     val maximumTrajectoryPoints: Int = 2_000,
     val maximumTrustedGnssAccuracyM: Double = 35.0,
+    val maximumTrustedGnssSpeedAccuracyMps: Double = 5.0,
+    val maximumTrustedGnssBearingAccuracyDeg: Double = 45.0,
+    val minimumGnssSpeedStandardDeviationMps: Double = 0.5,
+    val fallbackGnssSpeedStandardDeviationMps: Double = 1.5,
     val maximumUncorrectedSpeedMps: Double = 40.0,
-    val maximumUncorrectedSpeedIncreaseMps: Double = 15.0,
-    val minimumUncorrectedSpeedCeilingMps: Double = 25.0,
+    val maximumUncorrectedSpeedIncreaseMps: Double = 5.0,
+    val minimumUncorrectedSpeedCeilingMps: Double = 15.0,
+    val recoveryConsistencyDistanceM: Double = 40.0,
+    val largeDriftReanchorInnovationM: Double = 100.0,
+    val largeDriftReanchorUncertaintyM: Double = 50.0,
+    val largeDriftReanchorMinimumLossS: Double = 30.0,
 )
 
 private data class TrustedGnss(
     val fix: RuntimeGnssFix,
     val solutionTimestampNs: Long,
+)
+
+private data class TrustedMotionFix(
+    val solutionTimestampNs: Long,
+    val speedMps: Double,
+    val bearingDeg: Double,
 )
 
 /** Standalone, causal live IDR engine. Its only external sample input is the Phase 9 runtime object. */
@@ -42,11 +57,15 @@ class IdrEngine(
     private var verificationFixes = 0
     private var recoverySamples = 0
     private var recoveryTarget: LocalPoint? = null
+    private var recoveryTargetAccuracyM: Double? = null
     private var lastTrustedSpeedMps: Double? = null
+    private var blackoutStartedStationary = false
     private var mode = LocalizationMode.WAITING_FOR_GNSS
     private var latest = NavigationState()
     private val trajectory = ArrayDeque<TrajectoryPoint>()
     private val processingTimesMs = ArrayDeque<Double>()
+    private val trustedMotionFixes = ArrayDeque<TrustedMotionFix>()
+    private val focusedVelocity = CausalFocusedVelocity()
     private val inertialStopGate = InertialStopGate()
 
     @Synchronized
@@ -59,15 +78,19 @@ class IdrEngine(
         verificationFixes = 0
         recoverySamples = 0
         recoveryTarget = null
+        recoveryTargetAccuracyM = null
         lastTrustedSpeedMps = null
+        blackoutStartedStationary = false
         mode = LocalizationMode.WAITING_FOR_GNSS
         latest = NavigationState()
         trajectory.clear()
         processingTimesMs.clear()
+        trustedMotionFixes.clear()
         conditioner.reset()
         alignment.reset()
         ekf.reset()
         mlVelocity.reset()
+        focusedVelocity.reset()
         inertialStopGate.reset()
     }
 
@@ -90,6 +113,7 @@ class IdrEngine(
             lastGnssSolutionTimestampNs = distinctGnss.solutionTimestampNs
             lastFreshReceivedNs = sample.monotonicTimestampNs
             distinctGnss.fix.speedMps?.takeIf { it.isFinite() && it >= 0.0 }?.let { lastTrustedSpeedMps = it }
+            rememberTrustedMotionFix(distinctGnss)
         }
 
         val initializedBeforeSample = ekf.initialized
@@ -121,7 +145,12 @@ class IdrEngine(
             // Once GNSS is unavailable, preserve the last trusted vehicle alignment and propagate
             // yaw causally from the gyro instead of pulling the route toward an untrusted absolute
             // phone heading. Fresh GNSS continues to correct yaw through updateGnssState below.
-            if (alignmentHeading != null && trustedGnss != null) {
+            if (alignmentHeading != null && trustedGnss != null &&
+                mode != LocalizationMode.IDR_ACTIVE &&
+                mode != LocalizationMode.GNSS_DEGRADED &&
+                mode != LocalizationMode.GNSS_VERIFYING &&
+                mode != LocalizationMode.GNSS_RECOVERING
+            ) {
                 ekf.updateYaw(alignmentHeading, Math.toRadians(20.0))
             }
             if (trustedGnss == null) {
@@ -133,27 +162,68 @@ class IdrEngine(
             }
             val inertialStopConfirmed = inertialStopGate.update(dtS, conditioned)
             if (inertialStopGate.justReleasedStop) ekf.releaseStationaryConstraint()
-            val confidentlyStationary = inertialStopConfirmed || (trustedGnss != null &&
+            val trustedGnssShowsMotion = trustedGnss?.fix?.speedMps?.let {
+                it >= STATIONARY_SPEED_GATE_MPS
+            } == true
+            if (inertialStopConfirmed && trustedGnssShowsMotion) inertialStopGate.reset()
+            val confidentlyStationary = (inertialStopConfirmed && !trustedGnssShowsMotion) || (trustedGnss != null &&
                 conditioned.motionState == MotionState.LIKELY_STATIONARY &&
                 ekf.speedMps < STATIONARY_SPEED_GATE_MPS &&
                 (trustedGnss.fix.speedMps ?: 0.0) < STATIONARY_SPEED_GATE_MPS)
             if (confidentlyStationary) ekf.applyStationaryConstraint()
 
-            val (mlState, inference) = if (alignment.state == AlignmentState.READY) {
-                mlVelocity.update(buildMlFeatures(conditioned, confidentlyStationary))
-            } else {
-                mlVelocity.reset()
-                MlRuntimeState.ML_UNAVAILABLE to null
+            if (trustedGnss != null) {
+                blackoutStartedStationary = false
+            } else if (!focusedVelocity.active) {
+                blackoutStartedStationary = (lastTrustedSpeedMps ?: Double.POSITIVE_INFINITY) < STATIONARY_SPEED_GATE_MPS &&
+                    conditioned.motionState == MotionState.LIKELY_STATIONARY
+            } else if (conditioned.motionState == MotionState.MOVING) {
+                blackoutStartedStationary = false
             }
-            if (inference != null && mlVelocity.inferenceUpdated && alignment.state == AlignmentState.READY && !confidentlyStationary) {
+            // Low dynamics alone cannot distinguish a stopped receiver from smooth coasting.
+            // Admit the classifier as model evidence only after a trusted near-zero GNSS speed at
+            // the outage boundary, or after the independent braking-based stop gate confirms it.
+            val modelStationaryEvidence = confidentlyStationary || blackoutStartedStationary
+            val features = buildMlFeatures(conditioned, modelStationaryEvidence)
+            var mlResidualMps: Double? = null
+            var mlOodExceedance: Double? = null
+            var inferenceUpdated = false
+            val mlState = if (alignment.state != AlignmentState.READY) {
+                mlVelocity.reset()
+                focusedVelocity.reset()
+                MlRuntimeState.ML_UNAVAILABLE
+            } else if (trustedGnss == null) {
+                mlVelocity.reset()
+                if (!focusedVelocity.active) {
+                    focusedVelocity.startBlackout(reconstructPreLossSpeedFloor(sample.monotonicTimestampNs))
+                }
+                val (state, inference) = focusedVelocity.update(features)
+                mlResidualMps = inference?.residualMps
+                mlOodExceedance = inference?.oodExceedance
+                inferenceUpdated = focusedVelocity.inferenceUpdated
+                state
+            } else {
+                focusedVelocity.reset()
+                val (state, inference) = mlVelocity.update(features)
+                mlResidualMps = inference?.residualMps
+                mlOodExceedance = inference?.oodExceedance
+                inferenceUpdated = mlVelocity.inferenceUpdated
+                state
+            }
+            if (mlResidualMps != null && inferenceUpdated && alignment.state == AlignmentState.READY && !confidentlyStationary) {
+                val variance = if (trustedGnss == null) {
+                    CausalFocusedVelocity.MEASUREMENT_VARIANCE_MPS2
+                } else {
+                    FrozenVelocityModelData.VALIDATION_RESIDUAL_VARIANCE_MPS2
+                }
                 when (mlState) {
                     MlRuntimeState.ML_ACCEPTED -> ekf.applyMlSpeedMeasurement(
-                        ekf.speedMps + inference.residualMps,
-                        FrozenVelocityModelData.VALIDATION_RESIDUAL_VARIANCE_MPS2,
+                        ekf.speedMps + mlResidualMps,
+                        variance,
                     )
                     MlRuntimeState.ML_OOD_LIMITED -> ekf.applyMlSpeedMeasurement(
-                        ekf.speedMps + inference.residualMps,
-                        FrozenVelocityModelData.VALIDATION_RESIDUAL_VARIANCE_MPS2 * 4.0,
+                        ekf.speedMps + mlResidualMps,
+                        variance * 4.0,
                     )
                     else -> Unit
                 }
@@ -185,7 +255,8 @@ class IdrEngine(
                 conditioned,
                 confidentlyStationary,
                 mlState,
-                inference,
+                mlResidualMps,
+                mlOodExceedance,
                 innovationM,
                 correctionM,
             )
@@ -232,10 +303,13 @@ class IdrEngine(
         lastTimestampNs = sample.monotonicTimestampNs
         conditioner.reset()
         mlVelocity.reset()
+        focusedVelocity.reset()
+        blackoutStartedStationary = false
         inertialStopGate.reset()
         verificationFixes = 0
         recoverySamples = 0
         recoveryTarget = null
+        recoveryTargetAccuracyM = null
         lossStartedNs = null
         mode = when {
             mode == LocalizationMode.ERROR -> LocalizationMode.ERROR
@@ -309,11 +383,33 @@ class IdrEngine(
             fix.latitudeDeg !in -90.0..90.0 || fix.longitudeDeg !in -180.0..180.0 ||
             fix.accuracyM?.let { !it.isFinite() || it <= 0.0 || it > config.maximumTrustedGnssAccuracyM } == true
         ) return null
-        val ageNs = ((sample.gnssFixAgeSeconds ?: 0.0).coerceAtLeast(0.0) * 1e9).toLong()
+        val safeSpeed = fix.speedMps?.takeIf { speed ->
+            speed.isFinite() && speed >= 0.0 && speed <= config.maximumUncorrectedSpeedMps &&
+                (fix.speedAccuracyMps == null ||
+                    (fix.speedAccuracyMps.isFinite() && fix.speedAccuracyMps > 0.0 &&
+                        fix.speedAccuracyMps <= config.maximumTrustedGnssSpeedAccuracyMps))
+        }
+        val safeBearing = fix.bearingDeg?.takeIf { bearing ->
+            bearing.isFinite() && bearing >= 0.0 && bearing < 360.0 &&
+                (fix.bearingAccuracyDeg == null ||
+                    (fix.bearingAccuracyDeg.isFinite() && fix.bearingAccuracyDeg >= 0.0 &&
+                        fix.bearingAccuracyDeg <= config.maximumTrustedGnssBearingAccuracyDeg))
+        }
+        val sanitizedFix = fix.copy(speedMps = safeSpeed, bearingDeg = safeBearing)
+        val age = sample.gnssFixAgeSeconds ?: 0.0
+        if (!age.isFinite() || age < 0.0) return null
+        val ageNs = (age * 1e9).toLong()
         val solutionTimestampNs = sample.gnssDiagnostics.lastPhysicalGnssTimestampNs
             ?: (sample.monotonicTimestampNs - ageNs)
-        return TrustedGnss(fix, solutionTimestampNs)
+        if (solutionTimestampNs > sample.monotonicTimestampNs) return null
+        return TrustedGnss(sanitizedFix, solutionTimestampNs)
     }
+
+    private fun gnssSpeedStandardDeviation(fix: RuntimeGnssFix): Double =
+        fix.speedAccuracyMps?.coerceIn(
+            config.minimumGnssSpeedStandardDeviationMps,
+            config.maximumTrustedGnssSpeedAccuracyMps,
+        ) ?: config.fallbackGnssSpeedStandardDeviationMps
 
     private fun updateGnssState(
         sample: LiveIdrSample,
@@ -327,7 +423,10 @@ class IdrEngine(
             (sample.monotonicTimestampNs - it) / 1e9 <= config.recoveryFreshTimeoutS
         } ?: false
         if (mode == LocalizationMode.GNSS_RECOVERING && recoveryTarget != null && hasRecentFreshFix) {
-            if (local != null) recoveryTarget = local
+            if (local != null) {
+                recoveryTarget = local
+                recoveryTargetAccuracyM = distinctGnss.fix.accuracyM
+            }
             val target = recoveryTarget!!
             val innovation = ekf.innovationTo(target.eastM, target.northM)
             val correction = ekf.nudgePositionToward(
@@ -335,7 +434,9 @@ class IdrEngine(
                 target.northM,
                 config.recoveryCorrectionRateMps * dtS,
             )
-            distinctGnss?.fix?.speedMps?.let { ekf.updateSpeed(it, 2.0) }
+            distinctGnss?.fix?.speedMps?.let {
+                ekf.updateSpeed(it, max(2.0, gnssSpeedStandardDeviation(distinctGnss.fix)))
+            }
             distinctGnss?.fix?.bearingDeg?.let { ekf.updateYaw(Math.toRadians(it), Math.toRadians(20.0)) }
             recoverySamples += 1
             val completionDistanceM = if (suppressStationaryTranslation) {
@@ -346,25 +447,58 @@ class IdrEngine(
                 lossStartedNs = null
                 verificationFixes = 0
                 recoveryTarget = null
+                recoveryTargetAccuracyM = null
             }
             return innovation to correction
         }
         if (mode == LocalizationMode.GNSS_VERIFYING && distinctGnss != null) {
-            verificationFixes += 1
+            val candidate = requireNotNull(local)
+            val previousTarget = recoveryTarget
+            val accuracy = distinctGnss.fix.accuracyM ?: 8.0
+            val consistencyLimit = max(
+                config.recoveryConsistencyDistanceM,
+                3.0 * max(accuracy, recoveryTargetAccuracyM ?: accuracy),
+            )
+            if (previousTarget == null || hypot(
+                    candidate.eastM - previousTarget.eastM,
+                    candidate.northM - previousTarget.northM,
+                ) <= consistencyLimit
+            ) {
+                verificationFixes += 1
+            } else {
+                // A single internally inconsistent callback starts a new streak; it can never
+                // teleport the filter or inherit trust accumulated by earlier fixes.
+                verificationFixes = 1
+            }
+            recoveryTarget = candidate
+            recoveryTargetAccuracyM = accuracy
             if (verificationFixes >= config.recoveryVerificationFixes) {
-                recoveryTarget = local
                 recoverySamples = 0
                 mode = LocalizationMode.GNSS_RECOVERING
-                val target = requireNotNull(local)
+                val target = candidate
                 val innovation = ekf.innovationTo(target.eastM, target.northM)
-                val correction = ekf.nudgePositionToward(
-                    target.eastM,
-                    target.northM,
-                    config.recoveryCorrectionRateMps * dtS,
-                )
+                val lossDurationS = lossStartedNs?.let {
+                    (sample.monotonicTimestampNs - it) / 1e9
+                } ?: 0.0
+                val canReanchorLargeDrift = innovation >= config.largeDriftReanchorInnovationM &&
+                    ekf.horizontalSigmaM >= config.largeDriftReanchorUncertaintyM &&
+                    lossDurationS >= config.largeDriftReanchorMinimumLossS
+                val correction = if (canReanchorLargeDrift) {
+                    ekf.reanchorPosition(target.eastM, target.northM, accuracy)
+                    innovation
+                } else {
+                    ekf.nudgePositionToward(
+                        target.eastM,
+                        target.northM,
+                        config.recoveryCorrectionRateMps * dtS,
+                    )
+                }
+                distinctGnss.fix.speedMps?.let {
+                    ekf.updateSpeed(it, max(2.0, gnssSpeedStandardDeviation(distinctGnss.fix)))
+                }
                 return innovation to correction
             }
-            return local?.let { ekf.innovationTo(it.eastM, it.northM) } to 0.0
+            return ekf.innovationTo(candidate.eastM, candidate.northM) to 0.0
         }
         if (mode == LocalizationMode.GNSS_VERIFYING && !hasRecentFreshFix) {
             enterIdr(sample.monotonicTimestampNs)
@@ -374,6 +508,8 @@ class IdrEngine(
             mode == LocalizationMode.CALIBRATION_REQUIRED
         if (lossMode && distinctGnss != null) {
             verificationFixes = 1
+            recoveryTarget = local
+            recoveryTargetAccuracyM = distinctGnss.fix.accuracyM
             mode = LocalizationMode.GNSS_VERIFYING
             return local?.let { ekf.innovationTo(it.eastM, it.northM) } to 0.0
         }
@@ -385,7 +521,9 @@ class IdrEngine(
             if (!suppressStationaryTranslation) {
                 ekf.updatePosition(local.eastM, local.northM, distinctGnss.fix.accuracyM ?: 8.0)
             }
-            distinctGnss.fix.speedMps?.let { ekf.updateSpeed(it) }
+            distinctGnss.fix.speedMps?.let {
+                ekf.updateSpeed(it, gnssSpeedStandardDeviation(distinctGnss.fix))
+            }
             if (!suppressStationaryTranslation) {
                 distinctGnss.fix.bearingDeg?.let { ekf.updateYaw(Math.toRadians(it)) }
             }
@@ -412,6 +550,7 @@ class IdrEngine(
         verificationFixes = 0
         recoverySamples = 0
         recoveryTarget = null
+        recoveryTargetAccuracyM = null
     }
 
     private fun buildMlFeatures(conditioned: ConditionedMotion, stationary: Boolean) = doubleArrayOf(
@@ -427,12 +566,37 @@ class IdrEngine(
         ekf.speedMps,
     )
 
+    private fun rememberTrustedMotionFix(trusted: TrustedGnss) {
+        val speed = trusted.fix.speedMps?.takeIf { it.isFinite() && it >= 0.0 } ?: return
+        val bearing = trusted.fix.bearingDeg?.takeIf { it.isFinite() } ?: return
+        trustedMotionFixes.addLast(TrustedMotionFix(trusted.solutionTimestampNs, speed, bearing))
+        while (trustedMotionFixes.size > 2) trustedMotionFixes.removeFirst()
+    }
+
+    /** Reconstructs the same strictly pre-loss floor selected by offline validation. */
+    private fun reconstructPreLossSpeedFloor(lossStartNs: Long): Double? {
+        if (trustedMotionFixes.size < 2) return null
+        val fixes = trustedMotionFixes.toList()
+        val previous = fixes[fixes.lastIndex - 1]
+        val latest = fixes.last()
+        val intervalS = (latest.solutionTimestampNs - previous.solutionTimestampNs) / 1e9
+        val ageS = (lossStartNs - latest.solutionTimestampNs) / 1e9
+        val speedJumpMps = latest.speedMps - previous.speedMps
+        val courseJumpDeg = abs((latest.bearingDeg - previous.bearingDeg + 540.0) % 360.0 - 180.0)
+        if (intervalS <= 0.0 || ageS < 0.0 || ageS > RECONSTRUCTION_MAX_FIX_AGE_S ||
+            speedJumpMps <= RECONSTRUCTION_SPEED_JUMP_MPS || courseJumpDeg <= RECONSTRUCTION_COURSE_JUMP_DEG
+        ) return null
+        val trendMps2 = (speedJumpMps / intervalS).coerceIn(0.0, RECONSTRUCTION_MAX_ACCELERATION_MPS2)
+        return max(0.0, latest.speedMps + trendMps2 * ageS)
+    }
+
     private fun buildNavigationState(
         sample: LiveIdrSample,
         conditioned: ConditionedMotion,
         stationary: Boolean,
         mlState: MlRuntimeState,
-        inference: MlInference?,
+        mlResidualMps: Double?,
+        mlOodExceedance: Double?,
         innovationM: Double?,
         correctionM: Double,
     ): NavigationState {
@@ -462,14 +626,20 @@ class IdrEngine(
             alignmentProgress = alignment.progress,
             motionState = if (stationary) MotionState.LIKELY_STATIONARY else conditioned.motionState,
             mlState = mlState,
-            mlResidualMps = inference?.residualMps,
-            mlOodExceedance = inference?.oodExceedance,
+            mlResidualMps = mlResidualMps,
+            mlOodExceedance = mlOodExceedance,
             drDurationSeconds = drDuration,
             gnssInnovationM = innovationM,
             lastCorrectionM = correctionM,
-            message = if (stationary && mode == LocalizationMode.IDR_ACTIVE) {
-                "IDR active · vehicle stationary — position held using stationary constraint"
-            } else modeMessage(mode),
+            message = when {
+                mode in UNCERTAIN_POSITION_MODES && sigma >= POSITION_UNAVAILABLE_SIGMA_M ->
+                    "Position unavailable · GNSS denied and uncertainty exceeds ${POSITION_UNAVAILABLE_SIGMA_M.toInt()} m"
+                mode in UNCERTAIN_POSITION_MODES && sigma >= HIGH_UNCERTAINTY_SIGMA_M ->
+                    "Position highly uncertain · absolute speed is not independently observable"
+                stationary && mode == LocalizationMode.IDR_ACTIVE ->
+                    "IDR active · vehicle stationary — position held using stationary constraint"
+                else -> modeMessage(mode)
+            },
         )
     }
 
@@ -513,5 +683,17 @@ class IdrEngine(
         private const val STATIONARY_SPEED_GATE_MPS = 0.8
         private const val STATIONARY_RECOVERY_DISTANCE_M = 0.5
         private const val PERFORMANCE_WINDOW = 200
+        private const val RECONSTRUCTION_SPEED_JUMP_MPS = 5.0
+        private const val RECONSTRUCTION_COURSE_JUMP_DEG = 45.0
+        private const val RECONSTRUCTION_MAX_FIX_AGE_S = 10.0
+        private const val RECONSTRUCTION_MAX_ACCELERATION_MPS2 = 1.5
+        const val HIGH_UNCERTAINTY_SIGMA_M = 100.0
+        const val POSITION_UNAVAILABLE_SIGMA_M = 500.0
+        private val UNCERTAIN_POSITION_MODES = setOf(
+            LocalizationMode.GNSS_DEGRADED,
+            LocalizationMode.IDR_ACTIVE,
+            LocalizationMode.GNSS_VERIFYING,
+            LocalizationMode.GNSS_RECOVERING,
+        )
     }
 }

@@ -710,12 +710,20 @@ class MainActivity : Activity() {
             "GOOGLE LEGACY" -> "GOOGLE MAP"
             else -> "LOCAL ENU"
         }
-        speedHero.text = if (nav.sequenceId >= 0 && nav.latitudeDeg != null) String.format(Locale.US, "%.0f", nav.speedMps * 3.6) else "—"
-        modeHero.text = when (nav.localizationMode) {
+        val positionHighlyUncertain = UiSemantics.positionHighlyUncertain(nav)
+        val positionUnavailable = UiSemantics.positionUnavailable(nav)
+        speedHero.text = if (nav.sequenceId >= 0 && nav.latitudeDeg != null && !positionHighlyUncertain) {
+            String.format(Locale.US, "%.0f", nav.speedMps * 3.6)
+        } else "—"
+        modeHero.text = when {
+            positionUnavailable -> "POSITION UNAVAILABLE"
+            positionHighlyUncertain -> "POSITION HIGHLY UNCERTAIN"
+            else -> when (nav.localizationMode) {
             LocalizationMode.WAITING_FOR_GNSS -> "WAITING FOR GNSS"
             LocalizationMode.GNSS_RECOVERING -> "RECOVERING"
             LocalizationMode.IDR_ACTIVE -> if (nav.motionState.name == "LIKELY_STATIONARY") "IDR ACTIVE · STATIONARY" else "IDR ACTIVE"
             else -> UiSemantics.localizationLabel(nav.localizationMode)
+            }
         }
         val stateColor = org.sih26168.idrlogger.map.MapStateStyle.color(nav.localizationMode)
         modeHero.setTextColor(stateColor)
@@ -746,6 +754,8 @@ class MainActivity : Activity() {
             "SIMULATED GNSS BLACKOUT • no fresh physical fix available to mask"
         } else if (status?.message?.startsWith("TUNNEL TEST UNAVAILABLE") == true) {
             liveMessage.text = status.message
+        } else if (positionHighlyUncertain) {
+            liveMessage.text = nav.message
         }
         livePrimaryButton.text = if (status?.recording == true) "STOP NAVIGATION" else "START NAVIGATION"
         recordingLabel.text = if (status?.recording == true) "● LIVE • LOCAL" else "IDLE • LOCAL"
