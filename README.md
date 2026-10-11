@@ -1,462 +1,375 @@
-# NAVGHOST — NAVIGATION BEYOND GNSS
-
-Working SIH26168 research prototype with validated causal GNSS-denied navigation.
-Performance targets and validation gaps are listed below. Team NET-PSYCHO.
-
-## Current focused engineering status — 2026-10-10
-
-**Latest measured result: 3/4 locked blackout windows below 10% drift.** The protected causal estimator records **8.503%, 2.834%, 3.765%, and 11.692%** at 10, 30, 60, and 120 seconds. The 120-second target is not met. A road-assisted candidate reached 9.952% at 120 seconds but regressed the 30-second turning window to 19.782%, so it was rejected and never deployed.
-
-[Metro failure repair report](technical-evidence/field-failure-20261010/FIELD_FAILURE_REPAIR_REPORT.md) · [Physical-device smoke test](technical-evidence/field-failure-20261010/DEVICE_VALIDATION_REPORT.md) · [Final focused report](technical-evidence/accuracy-attack-20261007/NAVGHOST_120_SECOND_FINAL_ATTACK_REPORT.md) · [Protected results](technical-evidence/accuracy-attack-20261007/combined_benchmark_results.csv) · [Latest release-readiness audit](ISRO_RELEASE_READINESS.md) · [Field-recovery candidate APK](technical-evidence/field-failure-20261010/NavGhost-2.4.0-field-recovery-candidate-release.apk)
-
-The latest engineering gate is **311 Python tests and 207 Kotlin tests**, with Android lint, debug assembly and signed release assembly passing. The October 10 repair removes the reproduced 120.97 km/h ceiling failure from the supplied export, requires three consistent fixes before recovery, re-anchors only verified large-drift recovery, and suppresses unsupported precision when uncertainty becomes excessive. The signed candidate passed an in-place physical-phone smoke test across MapLibre 3D, Google Legacy and Google 3D/Hybrid. The public website download remains the previously protected 2.4.0 APK until a new controlled metro journey validates stop/dwell/restart and physical reacquisition. This stationary USB validation does not prove moving tunnel accuracy. Runtime road matching remains undeployed, cross-device transfer is mixed, and lane-level positioning remains unavailable.
-
-> Earlier accuracy tables below are retained as historical development evidence and are superseded by the October 8 focused report above.
-
-## Historical engineering status — 2026-10-05
-
-**App and website version: 2.4.0 (41).**
-The current build adds a tested generic sensor-input adapter, not a proven navigation-accuracy upgrade.
-The final signed APK passed an in-place, data-preserving stationary smoke test on a vivo V2513
-running Android 16. This validates deployment and core UI behavior, not moving accuracy.
-
-| Locked blackout | Reproduced baseline hybrid | Exploratory heading candidate |
-|---|---:|---:|
-| 10 s | 22.655% | 13.739% |
-| 30 s | 18.571% | 8.519% |
-| 60 s | 28.232% | 27.257% |
-| 120 s | 38.480% | 32.932% |
-
-**Public baseline: 0/4 below 10%. Research candidate: 1/4, NOT deployed.**
-The research candidate improves each standard hybrid window but regresses one development
-case and one cross-device case. These repeatedly inspected windows are exploratory evidence,
-not a new blind validation set. Full failed ablations remain available.
-
-- **Problem and solution:** propagate an uncertain vehicle estimate through a GNSS outage using phone inertial sensors; do not substitute map display for localization.
-- **Runtime architecture:** causal sensor synchronization → conditioning/alignment → six-state EKF → gated GRU speed residual → bounded verified GNSS recovery → engine-owned map/local ENU display.
-- **AI:** unchanged 4,257-parameter, 32-unit GRU, 10 features, 20 steps; predicts speed residual, never geographic position. Source-domain validation MAE is 6.814 m/s versus 12.226 classical. Transfer remains mixed.
-- **Android:** 194 Kotlin tests, lint and debug/signed-release builds pass. 293 Python tests pass. The signed 2.4.0 upgrade launched repeatedly, rendered all primary screens, exposed required sensors and produced no crash-buffer entry on a vivo V2513. [Details and limits](technical-evidence/finalist_20261005/ANDROID_DEVICE_VERIFICATION.md).
-- **Map matching:** RESEARCH ONLY. Existing road-branch failures prevent a safe runtime accuracy claim. Lane-level accuracy is unproven.
-- **Recovery:** existing distinct-fix verification and bounded correction remain; phone recovery has not been remeasured.
-- **External input:** candidate SI-unit replay adapter accepts synthetic 200 Hz input and normalizes to the model's 10 Hz cadence. No physical FOG or native 200 Hz navigation claim.
-- **Cross-device:** the heading candidate still worsens Mountain View 30 s hybrid drift (40.866% → 41.160%); Mountain View 60 s and Los Angeles 30 s improve modestly. All cases are reported.
-
-[Two-minute judge evidence](SIH26168_JUDGE_EVIDENCE.md) ·
-[Engineering report and reproduction](technical-evidence/finalist_20261005/ENGINEERING_REPORT.md) ·
-[Complete ablations](technical-evidence/finalist_20261005/all_ablations.csv) ·
-[Source and reproduction boundaries](research/README.md) ·
-[Release status](RELEASE_2_4_0.md)
-
-[Public 2.4.0 APK](https://navghost-idr.vercel.app/downloads/NavGhost-Android-v2.4.0.apk) ·
-[Website](https://navghost-idr.vercel.app/) ·
-[Historical demo—not current accuracy evidence](https://youtube.com/shorts/dDlNKvobRqo)
-
-**MOVING VEHICLE VALIDATION REQUIRED.** Configure the automatic preset while parked,
-mount the phone securely, and never interact as the driver. After parking, export
-the session privately and validate it using the [field protocol](technical-evidence/docs/phase11_field_validation.md).
-
----
-
-## HISTORICAL / SUPERSEDED — prior 2.4.0 presentation
-
-The text below is preserved as historical evidence. Current source version, test counts,
-external-input status, and release status are defined above and in the judge evidence.
-
 <p align="center">
   <img src="NavGhost-README-Hero.png" alt="NavGhost — Navigation Beyond GNSS" width="100%" />
 </p>
 
 <p align="center">
-  <a href="https://navghost-idr.vercel.app/"><strong>Website</strong></a>
-  &nbsp;•&nbsp;
-  <a href="https://youtube.com/shorts/dDlNKvobRqo?si=_gFi8ewl1akC1nOQ"><strong>Demo Video</strong></a>
-  &nbsp;•&nbsp;
-  <a href="https://navghost-idr.vercel.app/downloads/NavGhost-Android-v2.4.0.apk"><strong>Download APK</strong></a>
+  <a href="https://navghost-idr.vercel.app/"><img alt="Explore NavGhost" src="https://img.shields.io/badge/EXPLORE-NAVGHOST-37E6E6?style=for-the-badge&labelColor=06151F" /></a>
+  <a href="https://navghost-idr.vercel.app/downloads/NavGhost-Android-v2.4.0.apk"><img alt="Download Android APK" src="https://img.shields.io/badge/DOWNLOAD-ANDROID_APK-7C5CFC?style=for-the-badge&logo=android&logoColor=white&labelColor=06151F" /></a>
+  <a href="https://youtube.com/shorts/dDlNKvobRqo?si=_gFi8ewl1akC1nOQ"><img alt="Watch demo" src="https://img.shields.io/badge/WATCH-DEMO-FF3D71?style=for-the-badge&logo=youtube&logoColor=white&labelColor=06151F" /></a>
 </p>
 
-<p align="center">
-  <a href="#the-idea">Idea</a>
-  &nbsp;•&nbsp;
-  <a href="#architecture">Architecture</a>
-  &nbsp;•&nbsp;
-  <a href="#the-aiml-layer">AI/ML</a>
-  &nbsp;•&nbsp;
-  <a href="#measured-evidence">Measured Evidence</a>
-  &nbsp;•&nbsp;
-  <a href="#evidence-gallery">Gallery</a>
-  &nbsp;•&nbsp;
-  <a href="#android-engine-included-in-this-bundle">Android Engine</a>
-  &nbsp;•&nbsp;
-  <a href="#known-limitations">Limitations</a>
-</p>
-
-<h1 align="center">NavGhost</h1>
-<p align="center"><strong>Navigation Beyond GNSS.</strong></p>
-<p align="center">
-  A phone-only intelligent dead-reckoning system that keeps estimating vehicle motion when GNSS becomes unavailable.
-</p>
-
-## Final technical status · 2026-10-05
-
-NavGhost 2.4.0 estimates vehicle motion on an Android phone when trusted GNSS is lost. Causal phone sensors feed a six-state EKF; a frozen, out-of-distribution-gated GRU can correct speed; uncertainty grows during denial; fresh GNSS is verified before bounded recovery. No external navigation hardware, account, backend or cloud inference is required. Maps display the estimator's position and are not a location source.
-
-**Verdict: ready to demonstrate as a research prototype; not ready to claim full SIH26168 final-solution compliance.** The four frozen standard IO-VNBD S1 blackouts have Hybrid drift of **22.655%, 18.571%, 28.232%, 38.480%** at 10, 30, 60 and 120 seconds. Thus **0/4 meet the SIH under-10% drift target**. Lane-level accuracy, runtime road matching and the requested external-IMU/FOG edge pathway are also not demonstrated. The 75-second surprise holdout achieved 3.855%, but does not establish general compliance. These are offline replay numbers, not measured accuracy of the latest APK on a moving phone.
-
-| Blackout | Reference distance | Hybrid final error | Drift |
-|---:|---:|---:|---:|
-| 10 s | 154.16 m | 34.92 m | 22.655% |
-| 30 s | 200.92 m | 37.31 m | 18.571% |
-| 60 s | 262.79 m | 74.19 m | 28.232% |
-| 120 s | 1706.39 m | 656.62 m | 38.480% |
-
-The [full performance table](technical-evidence/results/FINAL_PERFORMANCE_TABLE.md) includes Raw DR, EKF, Hybrid, research-only map matching, RMSE/P95, uncertainty, recovery, speed and cross-device results. The [requirement matrix](SIH26168_FINAL_REQUIREMENTS_AUDIT.md) gives evidence for every PASS/PARTIAL/FAIL. The [2–3 minute judge summary](technical-evidence/results/FINAL_JUDGE_SUMMARY.md) is the quickest technical read. The [current Android Studio project](technical-evidence/android/android/) includes app source and tests, while the [technical overview](technical-evidence/docs/FINAL_TECHNICAL_OVERVIEW.md) describes the pipeline.
-
-**AI:** one-layer 32-unit GRU, 10 input features, 20 steps, 4,257 parameters, 21,649-byte checkpoint. It predicts a bounded speed residual, never a geographic position. Source-domain validation speed MAE improved from 12.226 to 6.814 m/s; zero-shot results on Pixel 4 XL and Pixel 5 were mixed. Frozen model SHA-256: `fa2169781f9e499dd87fdd00038a3b4a1326181b31938cec237a7802ae0bb4ec`.
-
-**Map matching:** an offline probabilistic road matcher was evaluated but is not deployed because its frozen comparison helped only 2/6 windows against the best Phase 5 prior. **Phone evidence:** the signed update installed without clearing data and relaunched twice on Vivo V2513 / Android 16 indoors; no new moving road accuracy was measured. An observed Google 3D vendor-state restore crash prompted a narrow lifecycle fix, but comprehensive 3D field validation is still open. Older physical evidence measured roughly 50 Hz native IMU and 9.6 Hz normalized rate. **Recovery:** two distinct fresh fixes and bounded correction are implemented and host-replay tested; current moving phone recovery accuracy is unmeasured. **Uncertainty** is covariance-derived and is not a calibrated 95% interval. Keyless and configured Google 3D builds pass; local ENU remains available. Tests: 288 Python, 187 Kotlin; Android lint passes with warnings. The [APK download](https://navghost-idr.vercel.app/downloads/NavGhost-Android-v2.4.0.apk) serves the signed 2.4.0 final-audit candidate (SHA-256 `3037f409caf79bfc76713636a2e81946b27de13902319a737f3da3450cca6f0e`); the [demo video](https://youtube.com/shorts/dDlNKvobRqo?si=_gFi8ewl1akC1nOQ) is historical, not a validation of this build's accuracy.
-
-Older phase descriptions below are preserved as **historical development records**. The final status and metrics above take precedence where version numbers or test totals differ.
+<p align="center"><strong>Phone-only intelligent dead reckoning for the moments when satellites go silent.</strong></p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/SIH26168-Intelligent%20Dead%20Reckoning-19c6e5?style=for-the-badge" alt="SIH26168" />
-  <img src="https://img.shields.io/badge/Android-API%2026%2B-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Android API 26+" />
-  <img src="https://img.shields.io/badge/Kotlin-On--Device-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white" alt="Kotlin" />
-  <img src="https://img.shields.io/badge/Python-Training%20%26%20Evaluation-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Estimator-6--State%20EKF-0b7285?style=flat-square" alt="6-state EKF" />
-  <img src="https://img.shields.io/badge/ML-4%2C257%20param%20GRU-6f42c1?style=flat-square" alt="GRU" />
-  <img src="https://img.shields.io/badge/Runtime-%7E10%20Hz-2f9e44?style=flat-square" alt="10Hz" />
-  <img src="https://img.shields.io/badge/Cloud%20Inference-Not%20Required-495057?style=flat-square" alt="No cloud inference" />
-  <img src="https://img.shields.io/badge/External%20Navigation%20Hardware-Not%20Required-495057?style=flat-square" alt="No external navigation hardware" />
+  <img alt="Android API 26+" src="https://img.shields.io/badge/Android-API_26+-3DDC84?style=flat-square&logo=android&logoColor=white" />
+  <img alt="Kotlin" src="https://img.shields.io/badge/Kotlin-On_device-7F52FF?style=flat-square&logo=kotlin&logoColor=white" />
+  <img alt="Estimator" src="https://img.shields.io/badge/Estimator-6_state_EKF-22D3EE?style=flat-square" />
+  <img alt="ML" src="https://img.shields.io/badge/ML-OOD_gated_GRU-C084FC?style=flat-square" />
+  <img alt="Cloud inference" src="https://img.shields.io/badge/Cloud_inference-None-14B8A6?style=flat-square" />
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-518_passing-34D399?style=flat-square" />
 </p>
 
 ---
 
-> **Repository layout:** the complete tracked Android Studio source is in `technical-evidence/android/android/`. Training/evaluation code, model evidence, selected benchmark outputs, plots, documentation and app-test media are in `technical-evidence/`. Large source datasets, private phone traces, signing credentials and local API keys are not published.
+## When the sky disappears, navigation should not
 
-## The idea
+GNSS works beautifully—until a vehicle enters a tunnel, underground metro, dense urban canyon, parking structure, or interference zone.
 
-Normal navigation is easy while satellite positioning works.
+**NavGhost bridges that gap.** It starts from the last trusted satellite fix, reads the phone's inertial sensors, propagates motion through a physics-first estimator, admits ML assistance only when the input is familiar, grows uncertainty honestly, and verifies GNSS before returning control.
 
-The interesting part begins when it doesn't.
+> NavGhost does not predict where a vehicle *should* be. It estimates where the vehicle *might* be—and tells you when that estimate is no longer trustworthy.
 
-**NavGhost is built for the gap between the last trusted GNSS fix and the moment trustworthy GNSS returns.** It starts from a known position, observes motion using the phone's built-in inertial sensors, propagates that motion through a classical estimator, optionally accepts a tightly gated ML speed correction, tracks uncertainty, and reconciles back to GNSS when fresh fixes return.
+Built by **Team NET-PSYCHO** for **Smart India Hackathon 2026 · SIH26168**, based on the Intelligent Dead Reckoning problem statement from ISRO / Department of Space.
 
-> **We are not predicting where the vehicle should be. We are estimating where the vehicle is.**
+## At a glance
 
-Built for **Smart India Hackathon 2026 — SIH26168**, an AI/ML-based Intelligent Dead Reckoning problem statement from **ISRO / Department of Space**.
-
----
-
-## What makes NavGhost different
-
-| Principle | What it means in NavGhost |
+| | Current verified status |
 |---|---|
-| **Physics first** | A six-state EKF remains the primary estimator. ML is assistance, not authority. |
-| **Phone only** | Runtime localization uses smartphone GNSS + IMU. No OBD-II, wheel encoder, external IMU, or custom navigation hardware is required. |
-| **Causal by design** | Runtime processing uses only data available at or before the current timestamp. No future leakage. |
-| **GNSS really disappears** | During simulated blackout, runtime GNSS is masked from the estimator even if raw callbacks continue into evaluator-only logs. |
-| **Maps do not localize** | Google/MapLibre/local views visualize the engine-owned position. They do not feed position back into the estimator. |
-| **AI can be refused** | Out-of-distribution inputs reduce or completely disable the GRU correction instead of forcing a prediction. |
-| **Uncertainty matters** | The engine carries covariance-derived uncertainty rather than pretending every estimate is equally trustworthy. |
+| **Release** | NavGhost `2.4.0` · Android `versionCode 41` |
+| **Runtime** | Phone GNSS + IMU · on-device · approximately 10 Hz normalized engine stream |
+| **Estimator** | 6-state EKF with stationary constraints and uncertainty propagation |
+| **ML assistant** | 1-layer, 32-unit GRU · 4,257 parameters · OOD gated |
+| **Frozen benchmark** | **3 of 4** locked GNSS-outage windows below 10% drift |
+| **Engineering gate** | **311 Python + 207 Kotlin tests**, Android lint, debug and signed-release builds |
+| **Physical smoke test** | vivo V2513 / Android 16 · data-preserving install · three map renderers · no observed NavGhost crash/ANR |
+| **Honest boundary** | 120-second frozen result is **11.692%**; repeat moving metro validation is still required |
 
-### What NavGhost is **not**
-
-- not an offline-map project
-- not a route-following shortcut
-- not a black-box latitude/longitude predictor
-- not dependent on cloud inference
-- not dependent on a laptop/backend for core localization
-- not claimed to have universal sub-10% drift
-- not survey-grade or safety-certified navigation
+<p align="center">
+  <a href="technical-evidence/field-failure-20261010/FIELD_FAILURE_REPAIR_REPORT.md"><strong>Latest field-failure report</strong></a>
+  &nbsp;·&nbsp;
+  <a href="technical-evidence/accuracy-attack-20261007/NAVGHOST_120_SECOND_FINAL_ATTACK_REPORT.md"><strong>Accuracy report</strong></a>
+  &nbsp;·&nbsp;
+  <a href="SIH26168_JUDGE_EVIDENCE.md"><strong>Judge evidence</strong></a>
+</p>
 
 ---
 
-## Architecture
+## The navigation stack
 
 ```mermaid
 flowchart LR
-    A[Android accelerometer / gyro / gravity / magnetometer] --> B[Causal sensor synchronization]
-    G[GPS_PROVIDER GNSS] --> B
-    B --> C[Sensor conditioning]
-    C --> D[Phone-to-vehicle alignment]
-    D --> E[6-state EKF]
-    E --> F[Stationary / ZUPT constraints]
-    F --> H{GRU safety gate}
-    H -->|Accepted| I[Bounded speed residual]
-    H -->|OOD limited| J[Higher measurement variance]
-    H -->|Hard OOD| K[AI safety fallback]
-    I --> E
-    J --> E
-    E --> L[NavigationState / trajectory / uncertainty]
-    L --> M[Google 3D / MapLibre / Local ENU visualization]
+    classDef input fill:#102430,stroke:#37e6e6,color:#f4fbff,stroke-width:1.5px
+    classDef core fill:#17162d,stroke:#9b7bff,color:#f4fbff,stroke-width:1.5px
+    classDef safety fill:#2b1829,stroke:#ff5cb8,color:#f4fbff,stroke-width:1.5px
+    classDef output fill:#10291f,stroke:#52e5a5,color:#f4fbff,stroke-width:1.5px
+
+    subgraph INPUTS[PHONE INPUTS]
+      GNSS[GNSS fixes]:::input
+      IMU[Accelerometer · gyro]:::input
+      ENV[Gravity · magnetometer]:::input
+    end
+
+    subgraph CAUSAL[CAUSAL MOTION PIPELINE]
+      SYNC[Timestamp + freshness gate]:::core
+      COND[Conditioning + alignment]:::core
+      EKF[6-state EKF]:::core
+      STOP[Stationary / ZUPT gate]:::safety
+    end
+
+    subgraph ASSIST[BOUNDED ML ASSIST]
+      FEATURES[20-step feature window]:::core
+      OOD{In distribution?}:::safety
+      GRU[GRU speed residual]:::core
+      FALLBACK[Classical fallback]:::safety
+    end
+
+    subgraph TRUST[TRUST + RECOVERY]
+      SIGMA[Covariance uncertainty]:::safety
+      VERIFY[3-fix consistency gate]:::safety
+      RECOVER[Bounded correction / verified re-anchor]:::core
+    end
+
+    subgraph EXPERIENCE[ENGINE-OWNED EXPERIENCE]
+      STATE[Navigation state]:::output
+      MAPS[MapLibre 3D · Google Legacy · 3D Hybrid]:::output
+      LOGS[Trips · exports · evidence]:::output
+    end
+
+    GNSS --> SYNC
+    IMU --> SYNC
+    ENV --> SYNC
+    SYNC --> COND --> EKF
+    COND --> STOP --> EKF
+    COND --> FEATURES --> OOD
+    OOD -->|yes| GRU --> EKF
+    OOD -->|no| FALLBACK --> EKF
+    EKF --> SIGMA --> STATE
+    GNSS --> VERIFY --> RECOVER --> EKF
+    STATE --> MAPS
+    STATE --> LOGS
 ```
 
-The GRU **never predicts latitude, longitude, or trajectory**. It predicts a bounded residual correction to the causal EKF forward-speed estimate.
-
-### Localization state flow
+The authority boundary is intentionally simple:
 
 ```text
-WAITING_FOR_GNSS
-      ↓
-CALIBRATING
-      ↓
-GNSS_ACTIVE
-      ↓ GNSS loss
-IDR_ACTIVE
-      ↓ fresh GNSS returns
-GNSS_VERIFYING
-      ↓
-GNSS_RECOVERING
-      ↓
-GNSS_ACTIVE
+PHONE SENSORS  ──▶  NAVGHOST ENGINE  ──▶  NAVIGATION STATE  ──▶  MAPS + UI
+                         ▲
+                   truth lives here
 ```
 
-If GNSS disappears **before** phone-to-vehicle alignment is ready, NavGhost intentionally enters `CALIBRATION_REQUIRED` and holds rather than fabricating motion.
+Maps render the engine-owned position. They cannot inject a prettier location back into the estimator.
+
+### Trust state machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> WaitingForGNSS
+    WaitingForGNSS --> Calibrating: first trusted fixes
+    Calibrating --> GNSSActive: vehicle alignment ready
+    Calibrating --> CalibrationRequired: signal lost too early
+    GNSSActive --> GNSSDegraded: stale / weak fixes
+    GNSSDegraded --> IDRActive: trusted GNSS lost
+    IDRActive --> GNSSVerifying: fresh physical fix returns
+    GNSSVerifying --> IDRActive: inconsistent / stale fix
+    GNSSVerifying --> GNSSRecovering: 3 consistent fixes
+    GNSSRecovering --> GNSSActive: reconciled
+```
+
+<details>
+<summary><strong>What happens during a GNSS outage?</strong></summary>
+
+1. GNSS freshness—not satellite count—decides whether a fix is usable.
+2. The last trusted position, speed, heading and covariance seed the outage.
+3. Conditioned phone motion propagates the six-state EKF causally.
+4. The stationary gate can apply a zero-velocity constraint when supported by evidence.
+5. The GRU may contribute a bounded speed residual only inside its learned domain.
+6. Uncertainty expands; exact speed and the precise map arrow disappear when confidence becomes indefensible.
+7. Returning GNSS must form a distinct, mutually consistent three-fix streak before recovery.
+
+</details>
 
 ---
 
-## The AI/ML layer
+## Built to fail honestly
 
-NavGhost uses a compact GRU as a **residual motion assistant** inside the classical estimator.
+| Guardrail | Why it exists |
+|---|---|
+| **Freshness and identity checks** | Duplicate, stale, or evaluator-only fixes cannot masquerade as live navigation input. |
+| **Causal processing** | Runtime code never uses future samples or offline reference labels. |
+| **Physics-first authority** | The EKF remains authoritative; ML predicts only a bounded speed residual. |
+| **OOD rejection** | Unfamiliar sensor windows reduce or disable ML assistance. |
+| **Speed envelope** | Unobserved acceleration cannot grow forever during a long outage. |
+| **Uncertainty-aware UI** | NavGhost stops showing exact speed at high uncertainty and removes the precise arrow when position is unavailable. |
+| **Verified reacquisition** | One attractive GNSS fix cannot teleport the estimator after kilometres of drift. |
+| **Map isolation** | Map imagery and route graphics never become hidden localization measurements. |
 
-| Model property | Frozen configuration |
+## October metro failure → engineering repair
+
+The supplied Bengaluru Metro recording and exported session exposed a connected failure chain:
+
+```mermaid
+flowchart LR
+    A[GNSS callback gap<br/>490.993 s] --> B[Biased acceleration]
+    B --> C[Old speed ceiling<br/>120.97 km/h]
+    C --> D[False motion through stops]
+    D --> E[Position + uncertainty drift]
+    E --> F[Returned GNSS corrected<br/>too slowly]
+
+    F --> G[Three-fix verification]:::fix
+    G --> H[Verified large-drift re-anchor]:::fix
+
+    classDef fix fill:#10291f,stroke:#52e5a5,color:#f4fbff,stroke-width:2px
+```
+
+| Observed failure | Repair in the current candidate |
+|---|---|
+| Speed locked near **121 km/h** through real station stops | Reduced unobserved speed-growth allowance and ceiling; exact replay no longer reaches the reproduced 33.60 m/s plateau |
+| Multi-kilometre estimate presented like a precise position | High-uncertainty speed suppression and map-marker removal |
+| Credible GNSS returned but recovery remained slow | Three consistent fixes can re-anchor a long, high-uncertainty, large-innovation state |
+| One inconsistent fix could inherit earlier trust | Inconsistent callbacks restart the verification streak |
+| Absolute heading could perturb a correlated denied-position state | Heading correction is deferred until the verified recovery path |
+
+**Replay result:** journey-bounded maximum fell from the reproduced **120.97 km/h ceiling** to **85.75 km/h**. This removes the confirmed runaway ceiling; it does **not** prove exact speed at every underground station. A quiet phone IMU cannot independently distinguish perfectly smooth motion from rest.
+
+<p align="center">
+  <a href="technical-evidence/field-failure-20261010/FIELD_FAILURE_BASELINE.md">Forensic baseline</a>
+  &nbsp;·&nbsp;
+  <a href="technical-evidence/field-failure-20261010/FIELD_FAILURE_REPAIR_REPORT.md">Repair report</a>
+  &nbsp;·&nbsp;
+  <a href="technical-evidence/field-failure-20261010/DEVICE_VALIDATION_REPORT.md">Device validation</a>
+  &nbsp;·&nbsp;
+  <a href="technical-evidence/field-failure-20261010/METRO_FIELD_TEST_CHECKLIST.md">Repeat-test protocol</a>
+</p>
+
+---
+
+## Experience across three map worlds
+
+<table>
+  <tr>
+    <td width="33%" align="center"><img src="technical-evidence/field-failure-20261010/device/device-ui-renderer-cycle-1.png" alt="MapLibre 3D" /><br/><strong>MapLibre 3D</strong></td>
+    <td width="33%" align="center"><img src="technical-evidence/field-failure-20261010/device/device-ui-renderer-cycle-2.png" alt="Google Legacy" /><br/><strong>Google Legacy</strong></td>
+    <td width="33%" align="center"><img src="technical-evidence/field-failure-20261010/device/device-ui-renderer-cycle-3.png" alt="Google 3D Hybrid" /><br/><strong>Google 3D Hybrid</strong></td>
+  </tr>
+</table>
+
+All three renderers displayed the same physical engine fix during the October 10 device smoke test. Manual dragging remained under user control, and the explicit **RECENTER** action returned to the live marker.
+
+<details>
+<summary><strong>See manual follow/recenter evidence</strong></summary>
+
+<table>
+  <tr>
+    <td width="50%" align="center"><img src="technical-evidence/field-failure-20261010/device/device-ui-manual-pan.png" alt="Manual map pan" /><br/><strong>User-controlled map</strong></td>
+    <td width="50%" align="center"><img src="technical-evidence/field-failure-20261010/device/device-ui-manual-recenter.png" alt="Explicit recenter" /><br/><strong>Explicit recenter</strong></td>
+  </tr>
+</table>
+
+</details>
+
+---
+
+## Measured—not mythologized
+
+### Frozen locked-window result
+
+| GNSS denial window | Drift | Under 10% gate |
+|---:|---:|:---:|
+| 10 s | **8.503%** | ✅ |
+| 30 s | **2.834%** | ✅ |
+| 60 s | **3.765%** | ✅ |
+| 120 s | **11.692%** | ❌ |
+
+**Result: 3/4.** A road-assisted experiment reached 9.952% at 120 seconds but regressed the 30-second turning window to 19.782%, so it was rejected rather than deployed.
+
+### Verification matrix
+
+| Layer | Result |
 |---|---:|
-| Architecture | 1-layer GRU + linear tanh-bounded residual head |
-| Input features | 10 |
-| Hidden units | 32 |
-| Sequence length | 20 steps |
-| Window duration | 2.0 s |
-| Nominal rate | 10 Hz |
-| Output | 1 bounded speed residual |
+| Python research/evaluation suite | **311 passed** |
+| Kotlin/Android JVM suite | **207 passed** |
+| Exact exported-session replay | **Passed** |
+| Android lint | **Passed** |
+| Debug + signed release assembly | **Passed** |
+| Physical data-preserving install | **Passed** |
+| Short physical GNSS + map smoke test | **Passed** |
+| Repeat moving metro validation | **Required** |
+
+The frozen GRU remains unchanged:
+
+```text
+SHA-256  fa2169781f9e499dd87fdd00038a3b4a1326181b31938cec237a7802ae0bb4ec
+```
+
+<details>
+<summary><strong>Compact ML model card</strong></summary>
+
+| Property | Frozen configuration |
+|---|---:|
+| Architecture | 1-layer GRU + bounded linear residual head |
+| Input / hidden / output | 10 / 32 / 1 |
+| Sequence | 20 steps · 2.0 seconds · nominal 10 Hz |
 | Parameters | **4,257** |
-| Frozen model size | **21,649 bytes** |
-| Best checkpoint | Epoch 14 |
-| Loss | Huber |
-| Batch size | 128 |
-| Learning rate | 0.002 |
-| Training windows | 11,818 |
-| Validation windows | 3,489 |
+| Checkpoint size | **21,649 bytes** |
+| Training / validation windows | 11,818 / 3,489 |
+| Loss / optimizer | Huber / Adam |
+| Batch / learning rate | 128 / 0.002 |
+| Output authority | Speed residual only—never latitude or longitude |
 
-Frozen model SHA-256:
+[Open the complete model card](technical-evidence/models/model_card.md)
+
+</details>
+
+---
+
+## Install and explore
+
+### Protected demonstration release
+
+[**Download NavGhost 2.4.0 for Android**](https://navghost-idr.vercel.app/downloads/NavGhost-Android-v2.4.0.apk)
+
+- Android 8.0 / API 26 or newer
+- Core localization is on-device and does not require an account or cloud inference
+- SHA-256: `cc1066ae3ba073fe657564624b2152ba67a3812eb5dcc4b4ac50bfa5808ff1fd`
+
+### Controlled-test recovery candidate
+
+[**Download the signed October 10 recovery candidate**](technical-evidence/field-failure-20261010/NavGhost-2.4.0-field-recovery-candidate-release.apk)
+
+- Same application identity and signing certificate as the installed 2.4.0 lineage
+- Passed stationary physical-device smoke testing
+- Requires a repeat controlled metro journey before promotion to the public download
+- SHA-256: `00ff90ac028188ef41214e0f876ad2baafa204857bd591071ad74dcd61a7aeeb`
+
+> Mount the phone securely and configure the test while parked. Never operate the app while driving. NavGhost is a research prototype, not safety-certified navigation.
+
+---
+
+## Repository guide
 
 ```text
-fa2169781f9e499dd87fdd00038a3b4a1326181b31938cec237a7802ae0bb4ec
+SIH26168-IDR/
+├── technical-evidence/
+│   ├── android/android/             # Kotlin runtime + tests
+│   ├── training/                    # Model training and preprocessing
+│   ├── models/                      # Frozen GRU, scaler and model card
+│   ├── accuracy-attack-20261007/    # Current locked-window research
+│   ├── field-failure-20261010/      # Metro forensic, repair and phone evidence
+│   ├── evaluation/                  # Summaries, diagnostics and timeseries
+│   ├── gnss_denied/                 # Blackout scenarios and runtime masks
+│   ├── plots/                       # Training, trajectory and error figures
+│   └── app_test_evidence/           # Screenshots and demo footage
+├── research/                        # Reproducible research subset
+├── SIH26168_JUDGE_EVIDENCE.md       # Short judge-facing technical evidence
+├── ISRO_RELEASE_READINESS.md        # Current readiness decision
+└── RELEASE_2_4_0.md                 # Release identity and integrity
 ```
 
-The runtime feature history contains conditioned acceleration, gyro motion, gravity/magnetic magnitudes, motion statistics, stationary state, and classical EKF speed. VBOX speed is used **offline only** as a training/evaluation reference label.
+### Best places to start
 
-Model card file in the evidence bundle: `models/model_card.md`
-
----
-
-## Measured evidence
-
-NavGhost deliberately keeps benchmark labels and limitations attached to the numbers.
-
-### Standard frozen blackout windows
-
-| GNSS blackout | Phase 5 Hybrid drift |
-|---:|---:|
-| 10 s | **22.655%** |
-| 30 s | **18.571%** |
-| 60 s | **28.232%** |
-| 120 s | **38.480%** |
-
-These are **scenario-specific frozen results**, not a universal accuracy claim.
-
-### Public 60-second stop/go holdout
-
-| Metric | Result |
-|---|---:|
-| Reference travel | **262.794 m** |
-| Raw dead-reckoning final error | **327.185 m** |
-| Hybrid final error | **74.192 m** |
-| Hybrid drift | **28.232%** |
-
-The strongest single preselected frozen surprise holdout reached **3.855%** drift, but that result is intentionally **not** presented as proof of general performance.
-
-### Runtime evidence
-
-| Evidence | Measured value | Scope |
-|---|---:|---|
-| Android engine throughput | **11,545 samples/s** | Warm host JVM, engine only |
-| Mean processing time | **0.0866 ms/sample** | Excludes UI, sensor acquisition, logging, startup, power |
-| P95 processing time | **0.185 ms/sample** | Same scope |
-| Physical native IMU | **~50 Hz** | Existing Phase 9.1 phone evidence |
-| Physical normalized runtime | **~9.6 Hz** | Existing Phase 9.1 phone evidence |
-| First valid physical fix | **19.17 s** | Existing open-sky evidence |
-
-Final performance table in the evidence bundle: `results/FINAL_PERFORMANCE_TABLE.md`
+| You want to… | Open |
+|---|---|
+| Understand the complete system quickly | [Final technical overview](technical-evidence/docs/FINAL_TECHNICAL_OVERVIEW.md) |
+| Inspect the strongest frozen accuracy result | [120-second attack report](technical-evidence/accuracy-attack-20261007/NAVGHOST_120_SECOND_FINAL_ATTACK_REPORT.md) |
+| Audit the real metro failure and repair | [Field-failure repair report](technical-evidence/field-failure-20261010/FIELD_FAILURE_REPAIR_REPORT.md) |
+| Review the exact Android engine | [Android project](technical-evidence/android/android/) |
+| Inspect training and model details | [Model card](technical-evidence/models/model_card.md) |
+| Reproduce the published research subset | [Research guide](research/README.md) |
+| Evaluate SIH requirement coverage | [Requirements audit](SIH26168_FINAL_REQUIREMENTS_AUDIT.md) |
 
 ---
 
-## Evidence gallery
+## What NavGhost is—and is not
 
-Visual evidence is included inside the technical evidence bundle under:
+**NavGhost is:**
 
-- `app_test_evidence/device_screenshots/`
-- `app_test_evidence/NavGhost-Final-v4.mp4`
-- `app_test_evidence/NavGhost-Final-Product-Demo-v3-Captioned.mp4`
+- a causal phone-only GNSS-denied navigation research prototype
+- a physics-first estimator with tightly bounded ML assistance
+- independent of backend or cloud inference for core localization
+- explicit about uncertainty, OOD inputs, rejected experiments and failed gates
 
-Public demo video: https://youtube.com/shorts/dDlNKvobRqo?si=_gFi8ewl1akC1nOQ
+**NavGhost is not:**
 
-### GNSS-denied benchmark locations
+- a route-following trick or map-snapping substitute for localization
+- a black-box latitude/longitude predictor
+- proof of lane-level or survey-grade accuracy
+- universally below 10% drift at every outage duration
+- validated safety-critical navigation
 
-Evidence bundle file: `gnss_denied/s1_blackout_benchmark_overview.png`
+### Remaining evidence gaps
 
-### Training and trajectory evidence
+- The locked 120-second window is **11.692%**, above the target.
+- A repeat moving metro run must validate stop, dwell, restart and physical GNSS reacquisition.
+- Cross-device and cross-location transfer remains mixed.
+- Phone-only inertial sensing cannot observe absolute constant velocity during perfectly smooth motion.
+- Covariance-derived uncertainty is an engineering estimate, not a calibrated 95% confidence interval.
+- Runtime road matching remains undeployed because the frozen comparison was not consistently beneficial.
 
-Evidence bundle files:
-
-- `plots/training_curve.png`
-- `plots/s1_60_stop_go_trajectory_comparison.png`
-
----
-
-## Dataset foundation
-
-Primary development/evaluation evidence comes from the synchronized **IO-VNBD S1 smartphone + VBOX vehicle-reference pair**.
-
-The selected S1 journey provides:
-
-- approximately **86.3 minutes** of synchronized driving
-- approximately **38.16 km** of travel
-- smartphone GNSS, accelerometer, gravity, gyroscope, magnetometer, and orientation
-- synchronized VBOX/CAN vehicle reference for **offline labels and evaluation only**
-- varied road behavior including roundabouts, reverse manoeuvres, hills, ring-road driving, and hard braking
-
-Additional datasets are inventoried for broader validation but are **not silently presented as training data**: PPC, Smartphone Decimeter 2022, WHU-Smartphone, MoRPI, and GREAT.
-
-Dataset inventory file in the evidence bundle: `dataset_info/DATASETS.md`
-
----
-
-## Android engine included in this bundle
-
-The evidence bundle preserves the core Kotlin localization path:
-
-```text
-android/android/app/src/main/java/org/sih26168/idrlogger/
-├── core/
-│   ├── CausalSensorBuffer.kt
-│   ├── GnssFreshnessTracker.kt
-│   ├── GnssLocationRepository.kt
-│   ├── IdrSensorStream.kt
-│   └── SensorRepository.kt
-├── engine/
-│   ├── ClassicalEkf.kt
-│   ├── CoordinateTransform.kt
-│   ├── FrozenVelocityModel.kt
-│   ├── FrozenVelocityModelData.kt
-│   ├── IdrEngine.kt
-│   ├── InertialStopGate.kt
-│   ├── SensorConditioner.kt
-│   └── VehicleAlignment.kt
-├── model/
-│   └── Models.kt
-└── service/
-    └── SensorLoggingService.kt
-```
-
-The current Gradle configuration targets Android API 36, supports API 26+, includes Google Maps, Google Maps 3D, MapLibre, OkHttp, Room and DataStore, and requires persistent release signing for release builds.
-
-**Important:** this bundle intentionally contains the navigation-engine evidence subset, not every current UI/source file required to rebuild the full application from scratch.
-
----
-
-## Repository map
-
-```text
-project/
-├── android/              # Core Kotlin runtime localization evidence
-├── app_test_evidence/    # Product/demo videos + physical-device screenshots
-├── dataset_info/         # Dataset inventory, experiment log, research notes
-├── docs/                 # Technical phase and release documentation
-├── evaluation/           # Evaluation summaries, diagnostics, timeseries
-├── gnss_denied/          # Blackout scenarios, runtime masks, result JSON/plots
-├── models/               # Frozen GRU, scaler, model card/config
-├── plots/                # Training, error, uncertainty, trajectory evidence
-├── results/              # Judge summaries, performance tables, parity vectors
-└── training/             # PyTorch model/training/evaluation pipeline
-```
-
-### Start here
-
-- `docs/FINAL_TECHNICAL_OVERVIEW.md`
-- `results/FINAL_JUDGE_SUMMARY.md`
-- `results/FINAL_PERFORMANCE_TABLE.md`
-- `models/model_card.md`
-- `dataset_info/DATASETS.md`
-- `dataset_info/EXPERIMENT_LOG.md`
-- `docs/phase5_algorithm.md`
-- `docs/phase7_reacquisition.md`
-- `docs/phase8_cross_dataset_validation.md`
-- `docs/phase10_live_android_idr.md`
-- `docs/phase11_field_validation.md`
-- `docs/NAVGHOST_V2_4_RELEASE.md`
-
-### Demo media
-
-- Public demo video: https://youtube.com/shorts/dDlNKvobRqo?si=_gFi8ewl1akC1nOQ
-- Evidence bundle file: `app_test_evidence/NavGhost-Final-v4.mp4`
-- Evidence bundle file: `app_test_evidence/NavGhost-Final-Product-Demo-v3-Captioned.mp4`
-
----
-
-## Safety boundaries built into the estimator
-
-NavGhost is intentionally difficult to fool into looking better than it is.
-
-- GNSS freshness is checked before fixes are trusted.
-- Loss simulation removes GNSS from the **runtime estimator**, not merely from the UI.
-- Timing gaps outside the supported runtime interval are dropped and the timing baseline is reset rather than integrating a huge fake timestep.
-- Inertial stationary detection can apply zero-velocity constraints.
-- Uncorrected speed is bounded during GNSS denial.
-- Hard OOD conditions reject ML assistance.
-- Recovery requires distinct fresh GNSS fixes before bounded reconciliation.
-- Map providers cannot write location back into the estimator.
-
-That separation is the heart of the project:
-
-```text
-SENSORS  →  ESTIMATOR  →  NAVIGATION STATE  →  VISUALIZATION
-                   ↑
-             authority lives here
-```
-
----
-
-## Known limitations
-
-NavGhost is a research/competition prototype under active validation.
-
-- Long GNSS outages can still accumulate substantial drift.
-- The current frozen phone model does **not** support a universal `<10%` drift claim.
-- Cross-device/location generalization is moderate, not solved.
-- Magnetometer disturbance and unfamiliar phone/mount domains can disable ML assistance.
-- Vehicle alignment requires a short, safe movement history before full IDR operation.
-- Live uncertainty is covariance-derived engineering uncertainty, not a calibrated 95% confidence region.
-- This bundle does not contain survey-grade/RTK road-validation evidence, battery-endurance measurements, or production certification.
-- Google map imagery is optional visualization. Core localization must remain independent of map rendering/network availability.
-
-Failures are kept visible because **a navigation system is only as credible as the cases it refuses to hide.**
-
----
-
-## Evidence integrity
-
-This bundle was assembled from existing NavGhost project artifacts. It does **not** invent experiments, benchmarks, model metrics, phone measurements, or missing validation.
-
-Where evidence does not exist, the documentation says so.
-
-That is deliberate.
+Failures stay visible because a navigation system is only as credible as the cases it refuses to hide.
 
 ---
 
 <p align="center">
   <strong>NAVGHOST</strong><br/>
-  <sub>Navigation Beyond GNSS.</sub>
+  <sub>Navigation beyond GNSS · Physics first · ML when earned · Uncertainty always visible</sub>
 </p>
