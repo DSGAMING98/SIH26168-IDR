@@ -107,7 +107,7 @@
     <circle r="34" fill="url(#markerGlow)">
       <animateMotion dur="10s" repeatCount="indefinite" rotate="auto"><mpath href="#motionPath"/></animateMotion>
     </circle>
-    <path d="M0-16 12 13 0 8-12 13Z" fill="#f9fdff" stroke="#47efff" stroke-width="3">
+    <path d="M16 0-13 12-8 0-13-12Z" fill="#f9fdff" stroke="#47efff" stroke-width="3">
       <animateMotion dur="10s" repeatCount="indefinite" rotate="auto"><mpath href="#motionPath"/></animateMotion>
     </path>
   </g>
