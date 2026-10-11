@@ -19,6 +19,20 @@
   <img alt="Tests" src="https://img.shields.io/badge/Tests-518_passing-34D399?style=flat-square" />
 </p>
 
+<p align="center">
+  <kbd><a href="#the-navigation-stack">Architecture</a></kbd>
+  <kbd><a href="#october-metro-failure--engineering-repair">Field repair</a></kbd>
+  <kbd><a href="#experience-across-three-map-worlds">Experience</a></kbd>
+  <kbd><a href="#measurednot-mythologized">Evidence</a></kbd>
+  <kbd><a href="#install-and-explore">Install</a></kbd>
+</p>
+
+<p align="center">
+  <img src="assets/navghost-runtime-theater.svg" alt="Animated NavGhost runtime theater: GNSS active, signal lost, IDR active, verifying and recovered" width="100%" />
+</p>
+
+<p align="center"><sub>Animated conceptual state journey · measured evidence is reported separately below</sub></p>
+
 ---
 
 ## When the sky disappears, navigation should not
@@ -51,6 +65,12 @@ Built by **Team NET-PSYCHO** for **Smart India Hackathon 2026 · SIH26168**, bas
   &nbsp;·&nbsp;
   <a href="SIH26168_JUDGE_EVIDENCE.md"><strong>Judge evidence</strong></a>
 </p>
+
+### Choose your route
+
+| 90-second overview | Technical deep dive | Reproduce the research | Try the app |
+|:---:|:---:|:---:|:---:|
+| [Judge evidence](SIH26168_JUDGE_EVIDENCE.md) | [System overview](technical-evidence/docs/FINAL_TECHNICAL_OVERVIEW.md) | [Research guide](research/README.md) | [Android download](https://navghost-idr.vercel.app/downloads/NavGhost-Android-v2.4.0.apk) |
 
 ---
 
@@ -133,6 +153,38 @@ stateDiagram-v2
     GNSSVerifying --> IDRActive: inconsistent / stale fix
     GNSSVerifying --> GNSSRecovering: 3 consistent fixes
     GNSSRecovering --> GNSSActive: reconciled
+```
+
+### One outage, frame by frame
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant P as Phone sensors
+    participant G as GNSS trust gate
+    participant E as 6-state EKF
+    participant M as OOD-gated GRU
+    participant U as NavGhost UI
+
+    P->>E: aligned IMU motion
+    G->>E: last trusted fix + speed
+    E->>U: GNSS ACTIVE · bounded uncertainty
+    Note over G,E: physical GNSS callbacks stop
+    G--xE: stale fixes rejected
+    P->>E: causal propagation continues
+    E->>M: 20-step conditioned feature window
+    alt feature window is in distribution
+        M-->>E: bounded speed residual
+    else unfamiliar motion or mounting domain
+        M-->>E: gated / unavailable
+    end
+    E->>U: IDR ACTIVE · uncertainty grows
+    Note over U: exact speed/arrow hidden if uncertainty is excessive
+    G->>G: fresh fix 1 · start verification
+    G->>G: fresh fix 2 · check consistency
+    G->>G: fresh fix 3 · trust earned
+    G->>E: verified recovery target
+    E->>U: RECOVERING → GNSS ACTIVE
 ```
 
 <details>

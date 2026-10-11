@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="560" viewBox="0 0 1280 560" role="img" aria-labelledby="title desc">
+  <title id="title">NavGhost runtime theater</title>
+  <desc id="desc">An animated conceptual journey from active GNSS, through a tunnel and intelligent dead reckoning, to verified GNSS recovery.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#030b13"/>
+      <stop offset="0.55" stop-color="#091426"/>
+      <stop offset="1" stop-color="#160d28"/>
+    </linearGradient>
+    <linearGradient id="route" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#45f3ff"/>
+      <stop offset="0.38" stop-color="#45f3ff"/>
+      <stop offset="0.47" stop-color="#df55ff"/>
+      <stop offset="0.72" stop-color="#8b6cff"/>
+      <stop offset="0.88" stop-color="#ffbc5c"/>
+      <stop offset="1" stop-color="#54f2a6"/>
+    </linearGradient>
+    <radialGradient id="markerGlow">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".9"/>
+      <stop offset=".35" stop-color="#47efff" stop-opacity=".52"/>
+      <stop offset="1" stop-color="#47efff" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M48 0H0V48" fill="none" stroke="#74a8c6" stroke-opacity=".07" stroke-width="1"/>
+    </pattern>
+    <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+    <path id="motionPath" d="M92 376 C218 330 260 236 386 250 S555 404 690 362 S870 200 1000 254 S1110 348 1190 210"/>
+    <style>
+      .eyebrow{font:700 14px 'Segoe UI',Arial,sans-serif;letter-spacing:4px;fill:#6f91a6}
+      .headline{font:800 34px 'Segoe UI',Arial,sans-serif;letter-spacing:-1px;fill:#f5fbff}
+      .copy{font:500 16px 'Segoe UI',Arial,sans-serif;fill:#8ba6b7}
+      .stage{font:800 15px 'Segoe UI',Arial,sans-serif;letter-spacing:2px}
+      .micro{font:700 12px 'Segoe UI',Arial,sans-serif;letter-spacing:2px;fill:#7592a5}
+      .value{font:800 17px 'Segoe UI',Arial,sans-serif;fill:#eaf8ff}
+      .pulse{animation:pulse 2.1s ease-in-out infinite;transform-origin:center}
+      .scan{animation:scan 4s linear infinite}
+      .dash{stroke-dasharray:12 14;animation:dash 1.4s linear infinite}
+      @keyframes pulse{0%,100%{opacity:.42;transform:scale(.82)}50%{opacity:.9;transform:scale(1.12)}}
+      @keyframes scan{from{transform:translateX(-220px)}to{transform:translateX(1420px)}}
+      @keyframes dash{to{stroke-dashoffset:-52}}
+      @media (prefers-reduced-motion:reduce){.pulse,.scan,.dash{animation:none}}
+    </style>
+  </defs>
+
+  <rect width="1280" height="560" rx="28" fill="url(#bg)"/>
+  <rect width="1280" height="560" rx="28" fill="url(#grid)"/>
+  <ellipse cx="660" cy="430" rx="520" ry="95" fill="#542b9e" opacity=".08" filter="url(#soft)"/>
+  <rect class="scan" x="0" y="0" width="180" height="560" fill="url(#markerGlow)" opacity=".11"/>
+
+  <text x="64" y="62" class="eyebrow">NAVGHOST / RUNTIME THEATER</text>
+  <text x="64" y="108" class="headline">Signal fades. Trust changes. Motion continues.</text>
+  <text x="64" y="139" class="copy">Conceptual state visualization — measured results remain in the evidence section.</text>
+
+  <g transform="translate(888 52)">
+    <rect width="328" height="94" rx="18" fill="#07151f" fill-opacity=".76" stroke="#315064"/>
+    <circle cx="28" cy="30" r="5" fill="#54f2a6" class="pulse"/>
+    <text x="48" y="35" class="micro">ENGINE AUTHORITY</text>
+    <text x="24" y="70" class="value">SENSORS → EKF → TRUST → UI</text>
+  </g>
+
+  <g transform="translate(64 178)">
+    <rect width="1152" height="54" rx="16" fill="#07131d" fill-opacity=".86" stroke="#263c4b"/>
+    <g opacity="1">
+      <circle cx="27" cy="27" r="6" fill="#45f3ff"/>
+      <text x="46" y="33" class="stage" fill="#45f3ff">GNSS ACTIVE</text>
+      <animate attributeName="opacity" values="1;1;.18;.18;.18;.18" keyTimes="0;.15;.21;.72;.84;1" dur="10s" repeatCount="indefinite"/>
+    </g>
+    <g opacity=".18" transform="translate(218)">
+      <circle cx="27" cy="27" r="6" fill="#ff5cb8"/>
+      <text x="46" y="33" class="stage" fill="#ff5cb8">SIGNAL LOST</text>
+      <animate attributeName="opacity" values=".18;.18;1;1;.18;.18" keyTimes="0;.18;.25;.39;.46;1" dur="10s" repeatCount="indefinite"/>
+    </g>
+    <g opacity=".18" transform="translate(428)">
+      <circle cx="27" cy="27" r="6" fill="#a879ff"/>
+      <text x="46" y="33" class="stage" fill="#a879ff">IDR ACTIVE</text>
+      <animate attributeName="opacity" values=".18;.18;1;1;.18;.18" keyTimes="0;.37;.45;.69;.76;1" dur="10s" repeatCount="indefinite"/>
+    </g>
+    <g opacity=".18" transform="translate(646)">
+      <circle cx="27" cy="27" r="6" fill="#ffbc5c"/>
+      <text x="46" y="33" class="stage" fill="#ffbc5c">VERIFYING</text>
+      <animate attributeName="opacity" values=".18;.18;1;1;.18;.18" keyTimes="0;.67;.75;.86;.91;1" dur="10s" repeatCount="indefinite"/>
+    </g>
+    <g opacity=".18" transform="translate(858)">
+      <circle cx="27" cy="27" r="6" fill="#54f2a6"/>
+      <text x="46" y="33" class="stage" fill="#54f2a6">RECOVERED</text>
+      <animate attributeName="opacity" values=".18;.18;1;1" keyTimes="0;.84;.92;1" dur="10s" repeatCount="indefinite"/>
+    </g>
+  </g>
+
+  <path d="M92 376 C218 330 260 236 386 250 S555 404 690 362 S870 200 1000 254 S1110 348 1190 210" fill="none" stroke="#153043" stroke-width="18" stroke-linecap="round"/>
+  <use href="#motionPath" fill="none" stroke="url(#route)" stroke-width="7" stroke-linecap="round" filter="url(#glow)"/>
+  <use href="#motionPath" fill="none" stroke="#dffcff" stroke-opacity=".42" stroke-width="2" class="dash"/>
+
+  <g transform="translate(475 257)">
+    <path d="M0 88V34C0 1 27-26 60-26h80c33 0 60 27 60 60v54" fill="#040b12" fill-opacity=".96" stroke="#633e91" stroke-width="3"/>
+    <path d="M34 88V38C34 20 49 5 67 5h66c18 0 33 15 33 33v50" fill="none" stroke="#382452" stroke-width="2"/>
+    <text x="100" y="54" text-anchor="middle" class="micro" fill="#be91ff">GNSS DENIED</text>
+  </g>
+
+  <g filter="url(#glow)">
+    <circle r="34" fill="url(#markerGlow)">
+      <animateMotion dur="10s" repeatCount="indefinite" rotate="auto"><mpath href="#motionPath"/></animateMotion>
+    </circle>
+    <path d="M0-16 12 13 0 8-12 13Z" fill="#f9fdff" stroke="#47efff" stroke-width="3">
+      <animateMotion dur="10s" repeatCount="indefinite" rotate="auto"><mpath href="#motionPath"/></animateMotion>
+    </path>
+  </g>
+
+  <g transform="translate(64 472)">
+    <rect width="1152" height="52" rx="14" fill="#07131d" fill-opacity=".82" stroke="#203746"/>
+    <text x="24" y="32" class="micro">POSITION SOURCE</text>
+    <text x="194" y="33" class="value">NAVGHOST ENGINE</text>
+    <line x1="412" y1="13" x2="412" y2="39" stroke="#284354"/>
+    <text x="438" y="32" class="micro">EKF</text>
+    <text x="492" y="33" class="value">RUNNING</text>
+    <line x1="634" y1="13" x2="634" y2="39" stroke="#284354"/>
+    <text x="660" y="32" class="micro">ML ASSIST</text>
+    <text x="770" y="33" class="value">GATED BY DOMAIN</text>
+    <line x1="970" y1="13" x2="970" y2="39" stroke="#284354"/>
+    <text x="996" y="32" class="micro">MAP</text>
+    <text x="1050" y="33" class="value">DISPLAY ONLY</text>
+  </g>
+</svg>
