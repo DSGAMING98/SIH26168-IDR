@@ -28,7 +28,7 @@
 </p>
 
 <p align="center">
-  <img src="assets/navghost-runtime-theater.svg" alt="Animated NavGhost runtime theater: GNSS active, signal lost, IDR active, verifying and recovered" width="100%" />
+  <img src="assets/navghost-runtime-theater-v2.svg" alt="Animated NavGhost runtime theater: GNSS active, signal lost, IDR active, verifying and recovered" width="100%" />
 </p>
 
 <p align="center"><sub>Animated conceptual state journey · measured evidence is reported separately below</sub></p>
