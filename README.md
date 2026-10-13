@@ -23,6 +23,7 @@
   <kbd><a href="#the-navigation-stack">Architecture</a></kbd>
   <kbd><a href="#october-metro-failure--engineering-repair">Field repair</a></kbd>
   <kbd><a href="#experience-across-three-map-worlds">Experience</a></kbd>
+  <kbd><a href="#play-signal-survival">Play</a></kbd>
   <kbd><a href="#measurednot-mythologized">Evidence</a></kbd>
   <kbd><a href="#install-and-explore">Install</a></kbd>
 </p>
@@ -32,6 +33,61 @@
 </p>
 
 <p align="center"><sub>Animated conceptual state journey · measured evidence is reported separately below</sub></p>
+
+## Play Signal Survival
+
+<p align="center">
+  <a href="https://navghost-idr.vercel.app/simulator/">
+    <img src="assets/signal-survival-launcher.svg" alt="Launch Signal Survival — an interactive NavGhost GNSS-outage mission" width="100%" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://navghost-idr.vercel.app/simulator/"><img alt="Play Signal Survival" src="https://img.shields.io/badge/PLAY-SIGNAL_SURVIVAL-40E8F4?style=for-the-badge&labelColor=06151F" /></a>
+  <img alt="Three engine decisions" src="https://img.shields.io/badge/DECISIONS-3_GUARDRAILS-9A6CFF?style=for-the-badge&labelColor=06151F" />
+  <img alt="No installation needed" src="https://img.shields.io/badge/RUNS-IN_BROWSER-FF4FC8?style=for-the-badge&labelColor=06151F" />
+</p>
+
+Choose how the estimator responds when GNSS becomes stale, the train stops underground, and satellite positioning returns. The mission reacts with live **speed**, **uncertainty**, **drift**, and **trust** telemetry, then grades the integrity of your navigation policy.
+
+> **Technical honesty:** Signal Survival is an educational, conceptual simulation—not a benchmark run. Measured results remain in the evidence sections below.
+
+<details>
+<summary><strong>No browser game? Play the README-native version</strong></summary>
+
+### Event 1 — satellite count looks healthy, but the physical fix is stale
+
+- **A.** Keep drawing the old GNSS dot because it looks precise.
+- **B.** Reject the stale fix and arm IDR from the last trusted state.
+
+<details><summary>Reveal the engine decision</summary>
+
+**B.** Freshness—not the number of visible satellites—determines whether GNSS may retain authority.
+
+</details>
+
+### Event 2 — the metro stops while IMU bias still resembles acceleration
+
+- **A.** Integrate indefinitely.
+- **B.** Apply a zero-velocity constraint only when stationary evidence is strong.
+
+<details><summary>Reveal the engine decision</summary>
+
+**B.** A guarded stationary constraint prevents false velocity from becoming kilometres of downstream position drift.
+
+</details>
+
+### Event 3 — one fresh GNSS fix returns far from the estimate
+
+- **A.** Teleport to it immediately.
+- **B.** Require a distinct, mutually consistent fix streak before bounded recovery.
+
+<details><summary>Reveal the engine decision</summary>
+
+**B.** NavGhost verifies recovery before returning authority; one attractive fix is not enough.
+
+</details>
+</details>
 
 ---
 

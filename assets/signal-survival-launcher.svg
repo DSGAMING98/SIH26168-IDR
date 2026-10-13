@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="390" viewBox="0 0 1280 390" role="img" aria-labelledby="title desc">
+  <title id="title">Launch NavGhost Signal Survival</title>
+  <desc id="desc">An animated mission console inviting visitors to play an interactive GNSS outage simulation.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#06131d"/><stop offset=".52" stop-color="#0d1024"/><stop offset="1" stop-color="#190b24"/></linearGradient>
+    <linearGradient id="route" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#38efff"/><stop offset=".5" stop-color="#946dff"/><stop offset="1" stop-color="#ff4fc8"/></linearGradient>
+    <linearGradient id="button" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#40e8f4"/><stop offset=".58" stop-color="#8069ff"/><stop offset="1" stop-color="#ef4bc7"/></linearGradient>
+    <pattern id="grid" width="38" height="38" patternUnits="userSpaceOnUse"><path d="M38 0H0V38" fill="none" stroke="#3b6375" stroke-opacity=".12"/></pattern>
+    <filter id="glow"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <path id="motion" d="M650 294C744 274 766 194 839 205C919 217 919 304 1006 270C1073 244 1084 159 1180 104"/>
+    <style>
+      .micro{font:800 12px ui-sans-serif,system-ui;letter-spacing:3px}.label{font:850 15px ui-sans-serif,system-ui;letter-spacing:2px}.title{font:950 54px ui-sans-serif,system-ui;letter-spacing:-2px}.copy{font:500 18px ui-sans-serif,system-ui}.pulse{animation:pulse 1.35s ease-in-out infinite alternate}.scan{animation:scan 4s linear infinite}.dash{stroke-dasharray:16 13;animation:dash 2s linear infinite}@keyframes pulse{to{opacity:.38;transform:scale(.78)}}@keyframes scan{from{transform:translateY(-300px)}to{transform:translateY(420px)}}@keyframes dash{to{stroke-dashoffset:-58}}@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+    </style>
+  </defs>
+  <rect width="1280" height="390" rx="28" fill="url(#bg)"/>
+  <rect x="1" y="1" width="1278" height="388" rx="27" fill="none" stroke="#29495b"/>
+  <rect width="1280" height="390" rx="28" fill="url(#grid)"/>
+  <path class="scan" d="M0 0h1280v70H0z" fill="url(#button)" opacity=".035"/>
+  <g transform="translate(58 52)">
+    <circle class="pulse" cx="7" cy="7" r="7" fill="#52e5a5"/>
+    <text x="27" y="12" class="micro" fill="#81a3b5">INTERACTIVE LAB / MISSION 01</text>
+    <text x="0" y="83" class="title" fill="#f7fcff">CAN YOU SURVIVE</text>
+    <text x="0" y="139" class="title" fill="url(#route)">THE SIGNAL LOSS?</text>
+    <text x="0" y="181" class="copy" fill="#9ab3c1">Make the engine decisions. Control drift. Earn recovery.</text>
+    <g transform="translate(0 220)">
+      <rect width="355" height="58" rx="13" fill="url(#button)"/>
+      <text x="28" y="36" class="label" fill="#031018">LAUNCH SIGNAL SURVIVAL</text>
+      <text x="319" y="37" font-family="ui-sans-serif,system-ui" font-size="23" font-weight="900" fill="#031018">→</text>
+    </g>
+  </g>
+  <g transform="translate(618 43)">
+    <rect width="604" height="304" rx="20" fill="#04101a" fill-opacity=".82" stroke="#244556"/>
+    <text x="24" y="36" class="micro" fill="#7898a9">LIVE MISSION CONSOLE</text>
+    <g transform="translate(425 18)"><circle class="pulse" cx="7" cy="7" r="6" fill="#ffbd63"/><text x="22" y="12" class="micro" fill="#ffbd63">GNSS LOST</text></g>
+    <path d="M32 251C126 231 148 151 221 162C301 174 301 261 388 227C455 201 466 116 562 61" fill="none" stroke="#152f3d" stroke-width="16" stroke-linecap="round"/>
+    <path class="dash" d="M32 251C126 231 148 151 221 162C301 174 301 261 388 227C455 201 466 116 562 61" fill="none" stroke="url(#route)" stroke-width="7" stroke-linecap="round" filter="url(#glow)"/>
+    <g transform="translate(245 145)"><path d="M0 85V33C0 4 23-19 52-19h64c29 0 52 23 52 52v52" fill="#02080e" stroke="#68489e" stroke-width="3"/><text x="84" y="48" text-anchor="middle" class="micro" fill="#a77cff">IDR</text></g>
+    <circle r="30" fill="#40e8f4" opacity=".2"><animateMotion dur="7s" repeatCount="indefinite" rotate="auto"><mpath href="#motion"/></animateMotion></circle>
+    <path d="M16 0-13 11-8 0-13-11Z" fill="#fff" stroke="#40e8f4" stroke-width="3" filter="url(#glow)"><animateMotion dur="7s" repeatCount="indefinite" rotate="auto"><mpath href="#motion"/></animateMotion></path>
+    <g transform="translate(24 269)"><text class="micro" fill="#6d8a9a">TRUST</text><text x="78" class="label" fill="#52e5a5">84%</text><text x="174" class="micro" fill="#6d8a9a">UNCERTAINTY</text><text x="320" class="label" fill="#f7fcff">± 8.4 M</text></g>
+  </g>
+</svg>
