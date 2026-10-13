@@ -18,10 +18,10 @@
   <path class="scan" d="M0 0h1280v70H0z" fill="url(#button)" opacity=".035"/>
   <g transform="translate(58 52)">
     <circle class="pulse" cx="7" cy="7" r="7" fill="#52e5a5"/>
-    <text x="27" y="12" class="micro" fill="#81a3b5">INTERACTIVE LAB / MISSION 01</text>
+    <text x="27" y="12" class="micro" fill="#81a3b5">INTERACTIVE LAB / DRIVE 02</text>
     <text x="0" y="83" class="title" fill="#f7fcff">CAN YOU SURVIVE</text>
     <text x="0" y="139" class="title" fill="url(#route)">THE SIGNAL LOSS?</text>
-    <text x="0" y="181" class="copy" fill="#9ab3c1">Make the engine decisions. Control drift. Earn recovery.</text>
+    <text x="0" y="181" class="copy" fill="#9ab3c1">Drive the car. Choose the source. Escape the tunnel.</text>
     <g transform="translate(0 220)">
       <rect width="355" height="58" rx="13" fill="url(#button)"/>
       <text x="28" y="36" class="label" fill="#031018">LAUNCH SIGNAL SURVIVAL</text>
