@@ -44,11 +44,12 @@
 
 <p align="center">
   <a href="https://navghost-idr.vercel.app/simulator/"><img alt="Play Signal Survival" src="https://img.shields.io/badge/PLAY-SIGNAL_SURVIVAL-40E8F4?style=for-the-badge&labelColor=06151F" /></a>
-  <img alt="Third-person 3D driving" src="https://img.shields.io/badge/DRIVE-THIRD_PERSON_3D-9A6CFF?style=for-the-badge&labelColor=06151F" />
+  <img alt="Open-world driving" src="https://img.shields.io/badge/DRIVE-OPEN_WORLD_3D-3F7C67?style=for-the-badge&labelColor=202A2F" />
+  <img alt="Chase and cockpit cameras" src="https://img.shields.io/badge/CAMERA-CHASE_%2B_COCKPIT-AE7A36?style=for-the-badge&labelColor=202A2F" />
   <img alt="No installation needed" src="https://img.shields.io/badge/RUNS-IN_BROWSER-FF4FC8?style=for-the-badge&labelColor=06151F" />
 </p>
 
-Drive a modeled car in **third-person 3D** with WASD, arrow keys, or touch controls. Enter a fully modeled, illuminated metro tunnel, follow the live minimap, choose between a stale satellite fix and NavGhost's guarded IDR, survive the physical underground fork, and watch the engine verify fresh fixes after resurfacing. The mission reacts with live **speed**, **uncertainty**, **position source**, and **trust** telemetry before grading the run.
+Drive through an **open-air 3D city** with moving traffic, buildings, junctions, roadside trees, and a physically modeled road tunnel. Switch at any time between a chase camera and a first-person cockpit with dashboard, steering wheel, and driver hands. Use WASD, arrow keys, or touch controls; follow real lane markings and road signs; then choose between a stale satellite fix and NavGhost's guarded IDR when the tunnel removes sky visibility. The live minimap and telemetry show **speed**, **uncertainty**, **position source**, and **trust** before the engine verifies fresh fixes after resurfacing and grades the run.
 
 > **Technical honesty:** Signal Survival is an educational, conceptual simulation—not a benchmark run. Measured results remain in the evidence sections below.
 
