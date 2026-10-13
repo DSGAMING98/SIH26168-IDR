@@ -44,11 +44,11 @@
 
 <p align="center">
   <a href="https://navghost-idr.vercel.app/simulator/"><img alt="Play Signal Survival" src="https://img.shields.io/badge/PLAY-SIGNAL_SURVIVAL-40E8F4?style=for-the-badge&labelColor=06151F" /></a>
-  <img alt="Real-time driving" src="https://img.shields.io/badge/DRIVE-REAL_TIME-9A6CFF?style=for-the-badge&labelColor=06151F" />
+  <img alt="Third-person 3D driving" src="https://img.shields.io/badge/DRIVE-THIRD_PERSON_3D-9A6CFF?style=for-the-badge&labelColor=06151F" />
   <img alt="No installation needed" src="https://img.shields.io/badge/RUNS-IN_BROWSER-FF4FC8?style=for-the-badge&labelColor=06151F" />
 </p>
 
-Drive the car yourself with **WASD, arrow keys, or touch controls**. Follow the live minimap into a GNSS-denied metro tunnel, choose between a stale satellite fix and NavGhost's guarded IDR, survive the underground fork, and watch the engine verify fresh fixes after resurfacing. The mission reacts with live **speed**, **uncertainty**, **position source**, and **trust** telemetry before grading the run.
+Drive a modeled car in **third-person 3D** with WASD, arrow keys, or touch controls. Enter a fully modeled, illuminated metro tunnel, follow the live minimap, choose between a stale satellite fix and NavGhost's guarded IDR, survive the physical underground fork, and watch the engine verify fresh fixes after resurfacing. The mission reacts with live **speed**, **uncertainty**, **position source**, and **trust** telemetry before grading the run.
 
 > **Technical honesty:** Signal Survival is an educational, conceptual simulation—not a benchmark run. Measured results remain in the evidence sections below.
 
