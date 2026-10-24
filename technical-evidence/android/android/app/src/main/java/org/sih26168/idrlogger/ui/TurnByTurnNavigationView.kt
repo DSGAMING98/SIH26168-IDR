@@ -36,6 +36,10 @@ import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
+import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.api.net.PlacesClient
+import com.google.android.libraries.places.api.net.SearchByTextRequest
 import java.util.Locale
 import kotlin.math.max
 import org.sih26168.idrlogger.BuildConfig
@@ -45,13 +49,14 @@ import org.sih26168.idrlogger.engine.NavigationSnapshot
 import org.sih26168.idrlogger.map.EngineMarkerPolicy
 import org.sih26168.idrlogger.map.MapCameraPolicy
 import org.sih26168.idrlogger.map.FollowResumeGuard
-import org.sih26168.idrlogger.product.AndroidApiIdentity
+import org.sih26168.idrlogger.product.CoordinateDestinationParser
 import org.sih26168.idrlogger.product.DestinationSearchClient
 import org.sih26168.idrlogger.product.DroppedPinDestination
 import org.sih26168.idrlogger.product.NavigationRoute
 import org.sih26168.idrlogger.product.RouteDestination
 import org.sih26168.idrlogger.product.RouteDirectionsClient
 import org.sih26168.idrlogger.product.RoutePoint
+import org.sih26168.idrlogger.product.RouteProgressGeometry
 import org.sih26168.idrlogger.product.RouteProgressTracker
 
 /**
@@ -65,8 +70,12 @@ class TurnByTurnNavigationView(
     private val onStartNavGhost: () -> Unit,
 ) : FrameLayout(context), OnMapReadyCallback, TextToSpeech.OnInitListener {
     private val mapView = MapView(context)
-    private val identity = AndroidApiIdentity.from(context)
-    private val searchClient = DestinationSearchClient(BuildConfig.PLACES_API_KEY, androidPackage = identity.packageName, androidCertSha1 = identity.certificateSha1)
+    private val searchClient = DestinationSearchClient(googleApiKey = "")
+    private val placesClient: PlacesClient? = runCatching {
+        if (!BuildConfig.PLACES_CONFIGURED) return@runCatching null
+        if (!Places.isInitialized()) Places.initializeWithNewPlacesApiEnabled(context.applicationContext, BuildConfig.PLACES_API_KEY)
+        Places.createClient(context.applicationContext)
+    }.getOrNull()
     private val routeClient = RouteDirectionsClient()
     private val uiHandler = Handler(Looper.getMainLooper())
     private val searchField: EditText
@@ -231,6 +240,10 @@ class TurnByTurnNavigationView(
         destination?.let { selected -> if (route == null && !routing) requestRoute(selected, RoutePoint(lat, lon)) }
         progressTracker?.let { tracker ->
             val progress = tracker.update(RoutePoint(lat, lon), state.speedMps, state.horizontalUncertaintyM)
+            route?.let { activeRoute ->
+                routeLine?.points = RouteProgressGeometry.remainingPolyline(activeRoute.points, RoutePoint(lat, lon))
+                    .map { LatLng(it.latitudeDeg, it.longitudeDeg) }
+            }
             instruction.text = if (progress.arrived) "ARRIVED" else formatDistance(progress.distanceToManeuverM) + " • " + progress.instruction
             if (progress.shouldSpeak) speak(progress.instruction)
             val threshold = max(65.0, (state.horizontalUncertaintyM ?: 0.0) * 2.0)
@@ -262,6 +275,11 @@ class TurnByTurnNavigationView(
     private fun search() {
         val query = searchField.text.toString().trim()
         if (query.length < 2) { Toast.makeText(context, "Enter a destination", Toast.LENGTH_SHORT).show(); return }
+        val selected = destination
+        if (route != null && selected != null && (query.equals(selected.name, true) || query.equals(selected.address, true))) {
+            dismissSearchResults(clearFocus = true)
+            return
+        }
         performSearch(query, manual = true)
     }
 
@@ -278,17 +296,75 @@ class TurnByTurnNavigationView(
         resultsPanel.removeAllViews(); resultsPanel.visibility = View.GONE
         val state = snapshotProvider().state
         val bias = if (state.latitudeDeg != null && state.longitudeDeg != null) RoutePoint(state.latitudeDeg, state.longitudeDeg) else null
-        searchClient.search(query, bias) { result -> post {
+        searchDestinations(query, bias) { result -> post {
             if (generation != searchGeneration || query != searchField.text.toString().trim()) return@post
             result.fold(::showSearchResults) { error -> instruction.text = "Search unavailable • ${error.message ?: "check internet"}" }
         } }
+    }
+
+    private fun searchDestinations(
+        query: String,
+        bias: RoutePoint?,
+        callback: (Result<List<RouteDestination>>) -> Unit,
+    ) {
+        CoordinateDestinationParser.parse(query)?.let { callback(Result.success(listOf(it))); return }
+        val google = placesClient
+        if (google == null) {
+            searchClient.search(query, bias, callback)
+            return
+        }
+
+        val lock = Any()
+        var googleResult: Result<List<RouteDestination>>? = null
+        var openResult: Result<List<RouteDestination>>? = null
+        var delivered = false
+        fun deliverWhenReady() {
+            val result = synchronized(lock) {
+                if (delivered || googleResult == null || openResult == null) return@synchronized null
+                delivered = true
+                val combined = googleResult!!.getOrDefault(emptyList()) + openResult!!.getOrDefault(emptyList())
+                if (combined.isNotEmpty()) {
+                    Result.success(combined.distinctBy { String.format(Locale.US, "%.5f,%.5f", it.latitudeDeg, it.longitudeDeg) }.take(10))
+                } else {
+                    Result.failure(googleResult!!.exceptionOrNull() ?: openResult!!.exceptionOrNull() ?: IllegalStateException("No destination found"))
+                }
+            }
+            result?.let(callback)
+        }
+
+        searchClient.search(query, bias) {
+            synchronized(lock) { openResult = it }
+            deliverWhenReady()
+        }
+        val fields = listOf(Place.Field.DISPLAY_NAME, Place.Field.FORMATTED_ADDRESS, Place.Field.LOCATION)
+        val request = SearchByTextRequest.builder(query, fields).setMaxResultCount(10).build()
+        google.searchByText(request)
+            .addOnSuccessListener { response ->
+                val results = response.places.mapNotNull { place ->
+                    val location = place.location ?: return@mapNotNull null
+                    RouteDestination(
+                        name = place.displayName?.takeIf(String::isNotBlank)
+                            ?: place.formattedAddress?.substringBefore(',')?.takeIf(String::isNotBlank)
+                            ?: "Destination",
+                        address = place.formattedAddress.orEmpty(),
+                        latitudeDeg = location.latitude,
+                        longitudeDeg = location.longitude,
+                    )
+                }
+                synchronized(lock) { googleResult = Result.success(results) }
+                deliverWhenReady()
+            }
+            .addOnFailureListener {
+                synchronized(lock) { googleResult = Result.failure(it) }
+                deliverWhenReady()
+            }
     }
 
     private fun showSearchResults(results: List<RouteDestination>) {
         resultsPanel.removeAllViews()
         if (results.isEmpty()) { instruction.text = "No destination found"; resultsPanel.visibility = View.GONE; return }
         instruction.text = "Choose a destination"
-        results.take(4).forEach { item ->
+        results.take(6).forEach { item ->
             val row = button("${item.name}\n${item.address}") { chooseDestination(item) }.apply {
                 gravity = Gravity.START or Gravity.CENTER_VERTICAL
                 textSize = 12f
@@ -300,8 +376,7 @@ class TurnByTurnNavigationView(
     }
 
     private fun chooseDestination(value: RouteDestination) {
-        uiHandler.removeCallbacks(suggestionSearch)
-        searchGeneration += 1
+        dismissSearchResults(clearFocus = true)
         suppressSuggestions = true
         searchField.setText(value.name)
         searchField.setSelection(searchField.text.length)
@@ -309,7 +384,6 @@ class TurnByTurnNavigationView(
         destination = value
         route = null
         progressTracker = null
-        resultsPanel.visibility = View.GONE
         instruction.text = "Preparing route to ${value.name}…"
         val state = snapshotProvider().state
         val lat = state.latitudeDeg; val lon = state.longitudeDeg
@@ -343,6 +417,7 @@ class TurnByTurnNavigationView(
 
     private fun renderRoute(value: RouteDestination, valueRoute: NavigationRoute, rerouting: Boolean) {
         val map = googleMap ?: return
+        dismissSearchResults(clearFocus = true)
         route = valueRoute
         progressTracker = RouteProgressTracker(valueRoute)
         routeLine?.remove()
@@ -369,12 +444,25 @@ class TurnByTurnNavigationView(
 
     private fun clearRoute() {
         followResumeGuard.invalidate()
+        dismissSearchResults(clearFocus = true)
         route = null; progressTracker = null; destination = null; offRouteSamples = 0
         routeLine?.remove(); routeLine = null
         destinationMarker?.remove(); destinationMarker = null
         tts?.stop()
         instruction.text = "Search for a destination to begin"
         routeSummary.text = "ONLINE ROAD ROUTING • VOICE READY"
+    }
+
+    private fun dismissSearchResults(clearFocus: Boolean) {
+        uiHandler.removeCallbacks(suggestionSearch)
+        searchGeneration += 1
+        resultsPanel.removeAllViews()
+        resultsPanel.visibility = View.GONE
+        if (clearFocus) {
+            searchField.clearFocus()
+            (context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager)
+                ?.hideSoftInputFromWindow(searchField.windowToken, 0)
+        }
     }
 
     private fun speak(text: String) {

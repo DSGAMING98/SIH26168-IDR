@@ -11,7 +11,9 @@ val localProperties = Properties().apply {
 val mapsApiKey = localProperties.getProperty("MAPS_API_KEY").orEmpty().trim()
 val maps3dApiKey = providers.gradleProperty("NAVGHOST_MAPS3D_API_KEY")
     .orElse(localProperties.getProperty("MAPS3D_API_KEY").orEmpty()).get().trim()
-val placesApiKey = localProperties.getProperty("PLACES_API_KEY").orEmpty().trim()
+// A dedicated Places key remains preferred, while existing installs can use the already restricted
+// Android Maps key instead of silently dropping to the smaller open-data search catalogue.
+val placesApiKey = localProperties.getProperty("PLACES_API_KEY").orEmpty().trim().ifEmpty { mapsApiKey }
 val signingProperties = Properties().apply {
     val file = rootProject.file("signing.properties")
     if (file.isFile) file.inputStream().use { load(it) }
@@ -123,12 +125,14 @@ tasks.matching { it.name == "assembleRelease" || it.name == "bundleRelease" }.co
 dependencies {
     implementation("com.google.android.gms:play-services-maps:20.0.0")
     implementation("com.google.android.gms:play-services-maps3d:0.2.2")
+    implementation("com.google.android.libraries.places:places:5.0.0")
     implementation("org.maplibre.gl:android-sdk:13.4.1")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("androidx.room:room-runtime:2.7.2")
     annotationProcessor("androidx.room:room-compiler:2.7.2")
     implementation("androidx.datastore:datastore-preferences:1.1.7")
     testImplementation("junit:junit:4.13.2")
+    testImplementation("org.json:json:20240303")
     testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
     androidTestImplementation("androidx.test:runner:1.7.0")
     androidTestImplementation("androidx.test:core:1.7.0")

@@ -2,8 +2,10 @@ package org.sih26168.idrlogger.product
 
 import java.util.Locale
 import java.util.concurrent.Executors
+import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.PI
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -27,6 +29,52 @@ object DroppedPinDestination {
         if (!latitude.isFinite() || !longitude.isFinite() || latitude !in -90.0..90.0 || longitude !in -180.0..180.0) return null
         val coordinates = String.format(Locale.US, "%.5f, %.5f", latitude, longitude)
         return RouteDestination("Dropped pin", coordinates, latitude, longitude)
+    }
+}
+
+object CoordinateDestinationParser {
+    private val coordinatePair = Regex("(?<![0-9.])(-?\\d{1,2}(?:\\.\\d+)?)\\s*[, ]\\s*(-?\\d{1,3}(?:\\.\\d+)?)(?![0-9.])")
+
+    fun parse(query: String): RouteDestination? {
+        val match = coordinatePair.find(query.trim()) ?: return null
+        val latitude = match.groupValues[1].toDoubleOrNull() ?: return null
+        val longitude = match.groupValues[2].toDoubleOrNull() ?: return null
+        return DroppedPinDestination.create(latitude, longitude)
+    }
+}
+
+/** Keeps only the untravelled route, beginning at the closest projection of the live position. */
+object RouteProgressGeometry {
+    fun remainingPolyline(points: List<RoutePoint>, position: RoutePoint): List<RoutePoint> {
+        if (points.size < 2) return points
+        val metresPerLatitudeDegree = 111_320.0
+        val metresPerLongitudeDegree = metresPerLatitudeDegree * cos(position.latitudeDeg * PI / 180.0)
+        var bestSegment = 0
+        var bestDistanceSquared = Double.POSITIVE_INFINITY
+        for (index in 0 until points.lastIndex) {
+            val start = points[index]
+            val end = points[index + 1]
+            val startX = (start.longitudeDeg - position.longitudeDeg) * metresPerLongitudeDegree
+            val startY = (start.latitudeDeg - position.latitudeDeg) * metresPerLatitudeDegree
+            val endX = (end.longitudeDeg - position.longitudeDeg) * metresPerLongitudeDegree
+            val endY = (end.latitudeDeg - position.latitudeDeg) * metresPerLatitudeDegree
+            val dx = endX - startX
+            val dy = endY - startY
+            val lengthSquared = dx * dx + dy * dy
+            val fraction = if (lengthSquared <= 1e-6) 0.0 else (-(startX * dx + startY * dy) / lengthSquared).coerceIn(0.0, 1.0)
+            val projectedX = startX + fraction * dx
+            val projectedY = startY + fraction * dy
+            val distanceSquared = projectedX * projectedX + projectedY * projectedY
+            if (distanceSquared < bestDistanceSquared) {
+                bestDistanceSquared = distanceSquared
+                bestSegment = index
+            }
+        }
+        return buildList {
+            // Start exactly under the live vehicle marker, then retain only points ahead.
+            add(position)
+            addAll(points.drop(bestSegment + 1))
+        }.distinctBy { Pair(it.latitudeDeg, it.longitudeDeg) }
     }
 }
 
@@ -137,6 +185,7 @@ class DestinationSearchClient(
     private val client: OkHttpClient = OkHttpClient(),
     private val androidPackage: String? = null,
     private val androidCertSha1: String? = null,
+    private val googleEndpoint: String = "https://places.googleapis.com/v1/places:searchText",
     private val nominatimEndpoint: String = "https://nominatim.openstreetmap.org/search",
 ) {
     private val executor = Executors.newSingleThreadExecutor()
@@ -151,24 +200,29 @@ class DestinationSearchClient(
         }
         executor.execute {
             callback(runCatching {
-                if (googleApiKey.isNotBlank()) runCatching { searchGoogle(cleaned, bias) }.getOrElse { searchOpenStreetMap(cleaned, bias) }
-                else searchOpenStreetMap(cleaned, bias)
-            }.map { results -> results.distinctBy { it.address.trim().lowercase(Locale.US) }.take(6) })
+                CoordinateDestinationParser.parse(cleaned)?.let { return@runCatching listOf(it) }
+                val google = if (googleApiKey.isNotBlank()) runCatching { searchGoogle(cleaned, bias) } else null
+                val openStreetMap = runCatching { searchOpenStreetMap(cleaned, bias) }
+                val combined = google?.getOrDefault(emptyList()).orEmpty() + openStreetMap.getOrDefault(emptyList())
+                if (combined.isEmpty()) {
+                    google?.exceptionOrNull()?.let { throw it }
+                    openStreetMap.exceptionOrNull()?.let { throw it }
+                }
+                rankAndDeduplicate(combined, cleaned, bias).take(10)
+            })
         }
     }
 
     private fun searchGoogle(query: String, bias: RoutePoint?): List<RouteDestination> {
-        val body = JSONObject().apply {
-            put("textQuery", query)
-            put("maxResultCount", 6)
-            if (bias != null) put("locationBias", JSONObject().put("circle", JSONObject()
-                .put("center", JSONObject().put("latitude", bias.latitudeDeg).put("longitude", bias.longitudeDeg))
-                .put("radius", 50_000.0)))
-        }
-        val builder = Request.Builder().url("https://places.googleapis.com/v1/places:searchText")
+        val escapedQuery = query.replace("\\", "\\\\").replace("\"", "\\\"")
+        val locationBias = bias?.let {
+            ""","locationBias":{"circle":{"center":{"latitude":${it.latitudeDeg},"longitude":${it.longitudeDeg}},"radius":50000.0}}"""
+        }.orEmpty()
+        val body = """{"textQuery":"$escapedQuery","pageSize":12$locationBias}"""
+        val builder = Request.Builder().url(googleEndpoint)
             .header("X-Goog-Api-Key", googleApiKey)
             .header("X-Goog-FieldMask", "places.displayName,places.formattedAddress,places.location")
-            .post(body.toString().toRequestBody(JSON))
+            .post(body.toRequestBody(JSON))
         androidPackage?.takeIf(String::isNotBlank)?.let { builder.header("X-Android-Package", it) }
         androidCertSha1?.takeIf(String::isNotBlank)?.let { builder.header("X-Android-Cert", it) }
         return client.newCall(builder.build()).execute().use { response ->
@@ -191,8 +245,9 @@ class DestinationSearchClient(
         val builder = nominatimEndpoint.toHttpUrl().newBuilder()
             .addQueryParameter("q", query)
             .addQueryParameter("format", "jsonv2")
-            .addQueryParameter("addressdetails", "0")
-            .addQueryParameter("limit", "6")
+            .addQueryParameter("addressdetails", "1")
+            .addQueryParameter("namedetails", "1")
+            .addQueryParameter("limit", "12")
             .addQueryParameter("accept-language", Locale.getDefault().toLanguageTag())
         bias?.takeIf { it.latitudeDeg.isFinite() && it.longitudeDeg.isFinite() }?.let {
             val latitudeRadius = 0.45
@@ -221,6 +276,32 @@ class DestinationSearchClient(
     private fun destination(name: String, address: String, latitude: Double, longitude: Double): RouteDestination? {
         if (!latitude.isFinite() || !longitude.isFinite() || latitude !in -90.0..90.0 || longitude !in -180.0..180.0) return null
         return RouteDestination(name.ifBlank { address.substringBefore(',').ifBlank { "Destination" } }, address, latitude, longitude)
+    }
+
+    private fun rankAndDeduplicate(
+        values: List<RouteDestination>,
+        query: String,
+        bias: RoutePoint?,
+    ): List<RouteDestination> {
+        val normalizedQuery = query.lowercase(Locale.US).replace(Regex("[^a-z0-9]+"), " ").trim()
+        fun score(value: RouteDestination): Double {
+            val name = value.name.lowercase(Locale.US).replace(Regex("[^a-z0-9]+"), " ").trim()
+            val address = value.address.lowercase(Locale.US)
+            val textScore = when {
+                name == normalizedQuery -> 0.0
+                name.startsWith(normalizedQuery) -> 1.0
+                name.contains(normalizedQuery) -> 2.0
+                address.contains(normalizedQuery) -> 3.0
+                else -> 4.0
+            }
+            val distancePenalty = bias?.let {
+                RouteProgressTracker.distanceM(it, RoutePoint(value.latitudeDeg, value.longitudeDeg)) / 1_000_000.0
+            } ?: 0.0
+            return textScore + distancePenalty
+        }
+        return values
+            .distinctBy { "%.5f,%.5f".format(Locale.US, it.latitudeDeg, it.longitudeDeg) }
+            .sortedBy(::score)
     }
 
     companion object { private val JSON = "application/json; charset=utf-8".toMediaType() }

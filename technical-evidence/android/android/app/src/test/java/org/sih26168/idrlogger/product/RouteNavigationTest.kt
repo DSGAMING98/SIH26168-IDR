@@ -24,6 +24,27 @@ class RouteNavigationTest {
         assertEquals(null, DroppedPinDestination.create(12.0, Double.NaN))
     }
 
+    @Test fun coordinateSearchAcceptsPlainCoordinatesAndGoogleMapsUrls() {
+        assertEquals(12.9716, CoordinateDestinationParser.parse("12.9716, 77.5946")!!.latitudeDeg, 0.0)
+        assertEquals(77.5946, CoordinateDestinationParser.parse("https://maps.google.com/@12.9716,77.5946,17z")!!.longitudeDeg, 0.0)
+        assertEquals(null, CoordinateDestinationParser.parse("meet me tomorrow"))
+    }
+
+    @Test fun completedRouteGeometryIsRemovedBehindVehicle() {
+        val points = listOf(
+            RoutePoint(12.0000, 77.0000),
+            RoutePoint(12.0010, 77.0000),
+            RoutePoint(12.0020, 77.0000),
+            RoutePoint(12.0030, 77.0000),
+        )
+        val remaining = RouteProgressGeometry.remainingPolyline(points, RoutePoint(12.0015, 77.0001))
+        assertEquals(12.0015, remaining.first().latitudeDeg, 1e-6)
+        assertEquals(77.0001, remaining.first().longitudeDeg, 1e-6)
+        assertFalse(remaining.contains(points.first()))
+        assertFalse(remaining.contains(points[1]))
+        assertEquals(points.last(), remaining.last())
+    }
+
     @Test fun formatsRoadManeuversForVoiceGuidance() {
         assertEquals("Head north onto MG Road", RouteInstructionFormatter.format("depart", "north", "MG Road"))
         assertEquals("Turn right onto Brigade Road", RouteInstructionFormatter.format("turn", "right", "Brigade Road"))
@@ -73,6 +94,35 @@ class RouteNavigationTest {
             assertEquals(77.5946, (viewbox[0] + viewbox[2]) / 2.0, 1e-9)
             assertEquals(12.9716, (viewbox[1] + viewbox[3]) / 2.0, 1e-9)
             assertEquals("0", request.requestUrl!!.queryParameter("bounded"))
+            client.close()
+        }
+    }
+
+    @Test fun destinationSearchMergesGoogleAndOpenDataResults() {
+        MockWebServer().use { server ->
+            server.enqueue(MockResponse().setResponseCode(200).setBody("""
+                {"places":[{"displayName":{"text":"National College"},"formattedAddress":"Basavanagudi, Bengaluru","location":{"latitude":12.9504,"longitude":77.5737}}]}
+            """.trimIndent()))
+            server.enqueue(MockResponse().setResponseCode(200).setBody("""
+                [{"display_name":"National College Metro Station, Bengaluru","lat":"12.9501","lon":"77.5739"}]
+            """.trimIndent()))
+            val client = DestinationSearchClient(
+                googleApiKey = "test-key",
+                client = OkHttpClient(),
+                googleEndpoint = server.url("/places:searchText").toString(),
+                nominatimEndpoint = server.url("/search").toString(),
+            )
+            val latch = CountDownLatch(1)
+            var result: Result<List<RouteDestination>>? = null
+            client.search("National College", RoutePoint(12.95, 77.57)) {
+                result = it
+                latch.countDown()
+            }
+            assertTrue(latch.await(2, TimeUnit.SECONDS))
+            assertEquals(2, result!!.getOrThrow().size)
+            val googleRequest = server.takeRequest()
+            assertTrue(googleRequest.body.readUtf8().contains("\"pageSize\":12"))
+            assertEquals("12", server.takeRequest().requestUrl!!.queryParameter("limit"))
             client.close()
         }
     }
