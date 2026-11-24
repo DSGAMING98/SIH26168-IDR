@@ -16,7 +16,7 @@
   <img alt="Estimator" src="https://img.shields.io/badge/Estimator-6_state_EKF-22D3EE?style=flat-square" />
   <img alt="ML" src="https://img.shields.io/badge/ML-OOD_gated_GRU-C084FC?style=flat-square" />
   <img alt="Cloud inference" src="https://img.shields.io/badge/Cloud_inference-None-14B8A6?style=flat-square" />
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-518_passing-34D399?style=flat-square" />
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-528_passing-34D399?style=flat-square" />
 </p>
 
 <p align="center">
@@ -111,7 +111,7 @@ Built by **Team NET-PSYCHO** for **Smart India Hackathon 2026 · SIH26168**, bas
 | **Estimator** | 6-state EKF with stationary constraints and uncertainty propagation |
 | **ML assistant** | 1-layer, 32-unit GRU · 4,257 parameters · OOD gated |
 | **Frozen benchmark** | **3 of 4** locked GNSS-outage windows below 10% drift |
-| **Engineering gate** | **311 Python + 207 Kotlin tests**, Android lint, debug and signed-release builds |
+| **Engineering gate** | **311 Python + 217 Kotlin tests**, Android lint, debug and signed-release builds |
 | **Physical smoke test** | vivo V2513 / Android 16 · data-preserving install · OSM Daylight 3D time scrub verified · no observed NavGhost crash/ANR |
 | **Honest boundary** | 120-second frozen result is **11.692%**; repeat moving metro validation is still required |
 
@@ -371,7 +371,7 @@ All three renderers displayed the same physical engine fix during the October 10
 | Layer | Result |
 |---|---:|
 | Python research/evaluation suite | **311 passed** |
-| Kotlin/Android JVM suite | **207 passed** |
+| Kotlin/Android JVM suite | **217 passed** |
 | Exact exported-session replay | **Passed** |
 | Android lint | **Passed** |
 | Debug + signed release assembly | **Passed** |
