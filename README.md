@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://navghost-idr.vercel.app/"><img alt="Explore NavGhost" src="https://img.shields.io/badge/EXPLORE-NAVGHOST-37E6E6?style=for-the-badge&labelColor=06151F" /></a>
-  <a href="https://navghost-idr.vercel.app/downloads/NavGhost-Android-v2.4.1.apk"><img alt="Download Android APK" src="https://img.shields.io/badge/DOWNLOAD-ANDROID_APK-7C5CFC?style=for-the-badge&logo=android&logoColor=white&labelColor=06151F" /></a>
+  <a href="https://navghost-idr.vercel.app/downloads/NavGhost-Android-v2.4.2.apk"><img alt="Download Android APK" src="https://img.shields.io/badge/DOWNLOAD-ANDROID_APK-7C5CFC?style=for-the-badge&logo=android&logoColor=white&labelColor=06151F" /></a>
   <a href="https://youtube.com/shorts/dDlNKvobRqo?si=_gFi8ewl1akC1nOQ"><img alt="Watch demo" src="https://img.shields.io/badge/WATCH-DEMO-FF3D71?style=for-the-badge&logo=youtube&logoColor=white&labelColor=06151F" /></a>
 </p>
 
@@ -106,13 +106,13 @@ Built by **Team NET-PSYCHO** for **Smart India Hackathon 2026 · SIH26168**, bas
 
 | | Current verified status |
 |---|---|
-| **Release** | NavGhost `2.4.1` · Android `versionCode 42` |
+| **Release** | NavGhost `2.4.2` · Android `versionCode 43` |
 | **Runtime** | Phone GNSS + IMU · on-device · approximately 10 Hz normalized engine stream |
 | **Estimator** | 6-state EKF with stationary constraints and uncertainty propagation |
 | **ML assistant** | 1-layer, 32-unit GRU · 4,257 parameters · OOD gated |
 | **Frozen benchmark** | **3 of 4** locked GNSS-outage windows below 10% drift |
 | **Engineering gate** | **311 Python + 217 Kotlin tests**, Android lint, debug and signed-release builds |
-| **Physical smoke test** | vivo V2513 / Android 16 · data-preserving install · OSM Daylight 3D time scrub verified · no observed NavGhost crash/ANR |
+| **Physical smoke test** | vivo V2513 / Android 16 · data-preserving install · OSM live-clock daylight verified · no observed NavGhost crash/ANR |
 | **Honest boundary** | 120-second frozen result is **11.692%**; repeat moving metro validation is still required |
 
 <p align="center">
@@ -127,7 +127,7 @@ Built by **Team NET-PSYCHO** for **Smart India Hackathon 2026 · SIH26168**, bas
 
 | 90-second overview | Technical deep dive | Reproduce the research | Try the app |
 |:---:|:---:|:---:|:---:|
-| [Judge evidence](SIH26168_JUDGE_EVIDENCE.md) | [System overview](technical-evidence/docs/FINAL_TECHNICAL_OVERVIEW.md) | [Research guide](research/README.md) | [Android download](https://navghost-idr.vercel.app/downloads/NavGhost-Android-v2.4.1.apk) |
+| [Judge evidence](SIH26168_JUDGE_EVIDENCE.md) | [System overview](technical-evidence/docs/FINAL_TECHNICAL_OVERVIEW.md) | [Research guide](research/README.md) | [Android download](https://navghost-idr.vercel.app/downloads/NavGhost-Android-v2.4.2.apk) |
 
 ---
 
@@ -314,14 +314,14 @@ flowchart LR
 
 ## OSM Daylight 3D
 
-NavGhost 2.4.1 adds a time-of-day view built from **OpenStreetMap-derived roads and height-aware building geometry**. A compact scrubber moves the scene through dawn, golden hour, daylight, dusk and night by changing the map's light direction, intensity, building tone and atmosphere. It starts at the phone's current local time and never changes estimator state.
+NavGhost 2.4.2 adds a time-of-day view built from **OpenStreetMap-derived roads and building geometry**. Every available building footprint is extruded: mapped height is used when present, while missing height metadata receives a conservative fallback so it does not remain flat. Solar direction, intensity, building tone and atmosphere follow the phone's current local clock automatically. There is no editable time control, and the presentation never changes estimator state.
 
 | What moves | What never moves |
 |---|---|
 | Solar azimuth and elevation | NavGhost latitude / longitude |
 | 3D building illumination | EKF, GRU and OOD gates |
 | Dawn, daylight and night atmosphere | GNSS authority and recovery logic |
-| User-controlled preview time | Recorded trajectory and uncertainty |
+| Automatic local-time refresh | Recorded trajectory and uncertainty |
 
 MapLibre Native is the Android renderer underneath; OpenStreetMap/OpenFreeMap supplies the map and building data. No new API key, cloud inference or position source is introduced. On the field-tested vivo V2513, the incompatible Google 3D surface is skipped completely instead of opening a renderer known to stall.
 
@@ -410,11 +410,11 @@ SHA-256  fa2169781f9e499dd87fdd00038a3b4a1326181b31938cec237a7802ae0bb4ec
 
 ### Protected demonstration release
 
-[**Download NavGhost 2.4.1 for Android**](https://navghost-idr.vercel.app/downloads/NavGhost-Android-v2.4.1.apk)
+[**Download NavGhost 2.4.2 for Android**](https://navghost-idr.vercel.app/downloads/NavGhost-Android-v2.4.2.apk)
 
 - Android 8.0 / API 26 or newer
 - Core localization is on-device and does not require an account or cloud inference
-- SHA-256: `b02437fcc02628aa4493968d20dfb5e2d9fd27078b168dc2e3f88bd1a050dd25`
+- SHA-256: `b8399d76babffaf5b395d2e007b890aca5bf0bbfceb7e32e02b7ae7338860226`
 
 ### Controlled-test recovery candidate
 
