@@ -22,7 +22,7 @@
 <p align="center">
   <kbd><a href="#the-navigation-stack">Architecture</a></kbd>
   <kbd><a href="#october-metro-failure--engineering-repair">Field repair</a></kbd>
-  <kbd><a href="#experience-across-three-map-worlds">Experience</a></kbd>
+  <kbd><a href="#osm-daylight-3d">OSM Daylight 3D</a></kbd>
   <kbd><a href="#play-signal-survival">Play</a></kbd>
   <kbd><a href="#measurednot-mythologized">Evidence</a></kbd>
   <kbd><a href="#install-and-explore">Install</a></kbd>
